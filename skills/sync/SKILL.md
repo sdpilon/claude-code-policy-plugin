@@ -83,9 +83,40 @@ Present the full list and wait for a go-ahead before writing anything; propagati
 an already-decided policy into other layers still means editing files, and the
 user gets to see exactly what's about to change before it does.
 
-Once approved, apply the edits and commit as one logical change (a sync pass
-across several files for one underlying cause is still one commit), going through
-this repo's own PR process if it has one.
+### Persist the proposal — don't carry it in your head
+
+Before presenting anything, write the full proposal to a scratch file outside the
+repo (this session's scratchpad directory if one exists, otherwise any disposable
+temp location) — not just into your chat response. For each file you're proposing
+to change, record its path, each specific `old_string`/`new_string` pair, and the
+file's current full-content hash (`shasum -a 256 <file>` or equivalent).
+
+This isn't bookkeeping for its own sake: the approval step means a real gap opens up
+between proposing and applying — often a separate turn, sometimes after the
+conversation has compacted. When you come back to apply, read *this file* as the
+source of truth and build your edits from it, never from memory of the diff you
+described earlier. Reconstructing an `Edit` call's `old_string` from recollection
+instead of a fresh read is exactly how a semantically-right but byte-different
+string fails to match — the hash is what lets you tell the difference between "I
+remember this correctly" and "this is still actually true."
+
+### Before applying: re-check the proposal is still fresh
+
+A real, if uncommon, risk: the target files could change — edited by the user, by
+another session, or by you in an unrelated task — in the gap between proposing and
+getting the go-ahead. Before touching anything, re-hash each target file and compare
+against the hash recorded in the persisted proposal:
+
+- **Hash matches** — the file is byte-identical to when you proposed the diff.
+  Apply it straight from the persisted record.
+- **Hash differs** — don't apply that file's edit. Say plainly that it changed since
+  the proposal (note what's obviously different, if anything is), and redo the
+  comparison for that file from scratch rather than guessing whether the old
+  `old_string` is still the right target to force through.
+
+Once approved and verified fresh, apply the edits and commit as one logical change (a
+sync pass across several files for one underlying cause is still one commit), going
+through this repo's own PR process if it has one.
 
 If you find zero mismatches, say so plainly — a clean sync check is a useful
 result, not a non-event.
