@@ -147,5 +147,38 @@ class UpdateEdgeTests(UpdateTestCase):
         self.assertIn("1 customized", result.stdout)
 
 
+class FailClosedTests(UpdateTestCase):
+    def assert_fails_closed(self, result):
+        self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+        self.assertEqual(result.stdout, "")
+
+    def test_missing_manifest_exits_2_names_init_and_changes_nothing(self):
+        self.manifest_path.unlink()
+        before = tree_hashes(self.repo)
+
+        result = run(UPDATE, self.repo)
+        self.assert_fails_closed(result)
+        self.assertIn("/policy:init", result.stderr)
+        self.assertEqual(tree_hashes(self.repo), before)
+
+    def test_invalid_json_manifest_exits_2_names_manifest_and_changes_nothing(self):
+        self.manifest_path.write_text("{ not json", encoding="utf-8")
+        before = tree_hashes(self.repo)
+
+        result = run(UPDATE, self.repo)
+        self.assert_fails_closed(result)
+        self.assertIn(str(self.manifest_path), result.stderr)
+        self.assertEqual(tree_hashes(self.repo), before)
+
+    def test_newer_format_version_exits_2_and_changes_nothing(self):
+        self.save({"format_version": 99, "plugin_version": "9.9.9", "files": {}})
+        before = tree_hashes(self.repo)
+
+        result = run(UPDATE, self.repo)
+        self.assert_fails_closed(result)
+        self.assertIn("newer plugin", result.stderr)
+        self.assertEqual(tree_hashes(self.repo), before)
+
+
 if __name__ == "__main__":
     unittest.main()
