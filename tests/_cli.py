@@ -8,8 +8,13 @@ REPO = Path(__file__).resolve().parent.parent
 
 
 def run(script, *args, cwd=None):
-    proc = subprocess.run([sys.executable, str(REPO / script), *args], cwd=cwd,
-                          capture_output=True, text=True)
+    proc = subprocess.run(
+        [sys.executable, str(REPO / script), *args],
+        cwd=cwd,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
     return proc.returncode, proc.stdout, proc.stderr
 
 

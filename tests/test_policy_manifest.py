@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
-import policy_manifest as pm  # noqa: E402
+import policy_manifest as pm
 
 
 class FingerprintTests(unittest.TestCase):
@@ -110,6 +110,7 @@ class ManifestIOTests(unittest.TestCase):
 class PluginVersionTests(unittest.TestCase):
     def test_reads_version_from_plugin_json(self):
         import json
+
         manifest = Path(pm.__file__).resolve().parent.parent / ".claude-plugin" / "plugin.json"
         expected = json.loads(manifest.read_text(encoding="utf-8"))["version"]
         self.assertEqual(pm.plugin_version(), expected)
@@ -129,13 +130,17 @@ class ClassifyTests(unittest.TestCase):
         self.assertEqual(pm.classify(self.entry(self.H1), self.H1, self.H2, exists=True), "stale")
 
     def test_customized_when_hash_differs(self):
-        self.assertEqual(pm.classify(self.entry(self.H1), self.H2, self.H2, exists=True), "customized")
+        self.assertEqual(
+            pm.classify(self.entry(self.H1), self.H2, self.H2, exists=True), "customized"
+        )
 
     def test_missing_when_entry_but_no_file(self):
         self.assertEqual(pm.classify(self.entry(self.H1), None, self.H1, exists=False), "missing")
 
     def test_no_longer_shipped_when_entry_but_no_template(self):
-        self.assertEqual(pm.classify(self.entry(self.H1), self.H1, None, exists=True), "no-longer-shipped")
+        self.assertEqual(
+            pm.classify(self.entry(self.H1), self.H1, None, exists=True), "no-longer-shipped"
+        )
 
     def test_new_when_no_entry_and_no_file(self):
         self.assertEqual(pm.classify(None, None, self.H1, exists=False), "new")

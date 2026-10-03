@@ -33,15 +33,21 @@ def load_manifest(path):
         raise ManifestError(f"manifest {path} must be a JSON object")
     version = data.get("format_version")
     if not isinstance(version, int) or isinstance(version, bool):
-        raise ManifestError(f"manifest {path} has no integer format_version; treating it as corrupt")
+        raise ManifestError(
+            f"manifest {path} has no integer format_version; treating it as corrupt"
+        )
     if version > FORMAT_VERSION:
-        raise ManifestError(f"manifest {path} uses format_version {version}; this plugin needs a newer plugin")
+        raise ManifestError(
+            f"manifest {path} uses format_version {version}; this plugin needs a newer plugin"
+        )
     files = data.get("files")
     if not isinstance(files, dict):
         raise ManifestError(f"manifest {path} has no files object")
     for name, entry in files.items():
         if not isinstance(entry, dict) or "sha256" not in entry or "shipped_version" not in entry:
-            raise ManifestError(f"manifest {path} entry {name} is missing sha256 or shipped_version")
+            raise ManifestError(
+                f"manifest {path} entry {name} is missing sha256 or shipped_version"
+            )
     return data
 
 

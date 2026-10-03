@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
-import policy_frontmatter as fm  # noqa: E402
+import policy_frontmatter as fm
 
 VALID = """---
 title: "No secrets in CI logs"
@@ -25,13 +25,19 @@ class ParseRenderTests(unittest.TestCase):
         fields = fm.parse(VALID)
         rendered = fm.render(fields)
         self.assertEqual(
-            [line.split(":")[0] for line in rendered.splitlines()[1:-1] if not line.startswith("  ")],
+            [
+                line.split(":")[0]
+                for line in rendered.splitlines()[1:-1]
+                if not line.startswith("  ")
+            ],
             ["title", "tags", "created", "modified", "audience", "verification"],
         )
         self.assertEqual(fm.parse(rendered), fields)
 
     def test_parses_block_list_and_nested_mapping(self):
-        text = "---\ntitle: t\ntags:\n- a\n- b\nverification:\n  method: written-only\n  via: x\n---\n"
+        text = (
+            "---\ntitle: t\ntags:\n- a\n- b\nverification:\n  method: written-only\n  via: x\n---\n"
+        )
         fields = fm.parse(text)
         self.assertEqual(fields["tags"], ["a", "b"])
         self.assertEqual(fields["verification"], {"method": "written-only", "via": "x"})

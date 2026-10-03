@@ -8,9 +8,20 @@ ADD = "skills/add/scripts/add_rule.py"
 
 class AddRuleTests(unittest.TestCase):
     def common(self, cwd, **overrides):
-        args = ["--statement", "Secrets MUST NOT appear in CI logs.", "--title", "No secrets in CI logs",
-                "--audience", "agent", "--verification-method", "ci-blocking",
-                "--verification-via", "secret-scan job", "--policy-dir", str(Path(cwd) / ".policy")]
+        args = [
+            "--statement",
+            "Secrets MUST NOT appear in CI logs.",
+            "--title",
+            "No secrets in CI logs",
+            "--audience",
+            "agent",
+            "--verification-method",
+            "ci-blocking",
+            "--verification-via",
+            "secret-scan job",
+            "--policy-dir",
+            str(Path(cwd) / ".policy"),
+        ]
         for k, v in overrides.items():
             args[args.index(k) + 1] = v
         return run(ADD, *args)
@@ -30,7 +41,10 @@ class AddRuleTests(unittest.TestCase):
         with scratch() as d:
             code, _, _ = self.common(d, **{"--audience": "robot"})
             self.assertEqual(code, 2)
-            self.assertFalse((Path(d) / ".policy" / "rule").exists() and any((Path(d) / ".policy" / "rule").iterdir()))
+            self.assertFalse(
+                (Path(d) / ".policy" / "rule").exists()
+                and any((Path(d) / ".policy" / "rule").iterdir())
+            )
 
     def test_invalid_verification_method_exits_2(self):
         with scratch() as d:
@@ -45,9 +59,21 @@ class AddRuleTests(unittest.TestCase):
 
     def test_subdirectory_option_keeps_id_and_places_file(self):
         with scratch() as d:
-            code, out, _ = run(ADD, "--statement", "Releases MUST be tagged.", "--title", "Tag releases",
-                               "--audience", "human", "--verification-method", "written-only",
-                               "--dir", "ci", "--policy-dir", str(Path(d) / ".policy"))
+            code, _out, _ = run(
+                ADD,
+                "--statement",
+                "Releases MUST be tagged.",
+                "--title",
+                "Tag releases",
+                "--audience",
+                "human",
+                "--verification-method",
+                "written-only",
+                "--dir",
+                "ci",
+                "--policy-dir",
+                str(Path(d) / ".policy"),
+            )
             self.assertEqual(code, 0)
             self.assertTrue((Path(d) / ".policy" / "rule" / "ci" / "001.md").exists())
 

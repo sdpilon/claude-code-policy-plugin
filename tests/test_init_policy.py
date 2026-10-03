@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parent.parent
 INIT = ROOT / "skills" / "init" / "scripts" / "init_policy.py"
 ADD = ROOT / "skills" / "add" / "scripts" / "add_rule.py"
 sys.path.insert(0, str(ROOT / "scripts"))
-import policy_manifest as pm  # noqa: E402
+import policy_manifest as pm
 
 
 def run(script, cwd, *args):
@@ -19,6 +19,7 @@ def run(script, cwd, *args):
         cwd=cwd,
         capture_output=True,
         text=True,
+        check=False,
     )
 
 
@@ -56,12 +57,18 @@ class InitTests(unittest.TestCase):
         result = run(
             ADD,
             self.repo,
-            "--statement", "Commits MUST be signed.",
-            "--title", "Signed commits",
-            "--audience", "human,agent",
-            "--verification-method", "written-only",
-            "--verification-via", "review",
-            "--rationale", "Attribution matters.",
+            "--statement",
+            "Commits MUST be signed.",
+            "--title",
+            "Signed commits",
+            "--audience",
+            "human,agent",
+            "--verification-method",
+            "written-only",
+            "--verification-via",
+            "review",
+            "--rationale",
+            "Attribution matters.",
         )
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertTrue((self.repo / ".policy" / "rule" / "001.md").is_file())

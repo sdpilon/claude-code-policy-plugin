@@ -10,13 +10,15 @@ ROOT = Path(__file__).resolve().parent.parent
 INIT = ROOT / "skills" / "init" / "scripts" / "init_policy.py"
 UPDATE = ROOT / "skills" / "update" / "scripts" / "update_policy.py"
 sys.path.insert(0, str(ROOT / "scripts"))
-import policy_manifest as pm  # noqa: E402
+import policy_manifest as pm
 
 README = ".policy/README.md"
 
 
 def run(script, cwd):
-    return subprocess.run([sys.executable, str(script)], cwd=cwd, capture_output=True, text=True)
+    return subprocess.run(
+        [sys.executable, str(script)], cwd=cwd, capture_output=True, text=True, check=False
+    )
 
 
 def tree_hashes(root):
@@ -52,19 +54,26 @@ class UpdateTableTests(UpdateTestCase):
         old = b"old shipped text\n"
         (self.repo / README).write_bytes(old)
         data = self.manifest()
-        data["files"][README] = {"shipped_version": "0.1.0", "sha256": hashlib.sha256(old).hexdigest()}
+        data["files"][README] = {
+            "shipped_version": "0.1.0",
+            "sha256": hashlib.sha256(old).hexdigest(),
+        }
         self.save(data)
 
         result = run(UPDATE, self.repo)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn(f"updated: {README}", result.stdout)
-        self.assertEqual(self.readme().read_bytes(), (ROOT / "templates" / "policy-readme.md").read_bytes())
+        self.assertEqual(
+            self.readme().read_bytes(), (ROOT / "templates" / "policy-readme.md").read_bytes()
+        )
         entry = self.manifest()["files"][README]
         self.assertEqual(entry["sha256"], pm.fingerprint(self.readme()))
         self.assertEqual(entry["shipped_version"], pm.plugin_version())
 
     def test_row2_customized_file_is_left_alone_and_diffed(self):
-        self.readme().write_text(self.readme().read_text(encoding="utf-8") + "my local line\n", encoding="utf-8")
+        self.readme().write_text(
+            self.readme().read_text(encoding="utf-8") + "my local line\n", encoding="utf-8"
+        )
         before = self.readme().read_bytes()
 
         result = run(UPDATE, self.repo)
@@ -186,7 +195,10 @@ class PermissionTests(UpdateTestCase):
         (self.repo / README).write_bytes(old)
         (self.repo / README).chmod(0o644)
         data = self.manifest()
-        data["files"][README] = {"shipped_version": "0.1.0", "sha256": hashlib.sha256(old).hexdigest()}
+        data["files"][README] = {
+            "shipped_version": "0.1.0",
+            "sha256": hashlib.sha256(old).hexdigest(),
+        }
         self.save(data)
 
         result = run(UPDATE, self.repo)

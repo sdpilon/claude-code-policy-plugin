@@ -55,7 +55,9 @@ class PolicyStatusTests(unittest.TestCase):
         with scratch() as d:
             rule = self.repo(d) / "rule" / "001.md"
             rule.parent.mkdir(parents=True)
-            rule.write_text("---\ntitle: x\ncreated: 2026-10-02\nmodified: 2026-10-02\naudience: [agent]\n---\n\n**001**: x MUST y.\n")
+            rule.write_text(
+                "---\ntitle: x\ncreated: 2026-10-02\nmodified: 2026-10-02\naudience: [agent]\n---\n\n**001**: x MUST y.\n"
+            )
             row = load(run(STATUS, d)[1])["rules"][0]
             self.assertEqual(row["tier"], "unclassified")
 
@@ -63,8 +65,10 @@ class PolicyStatusTests(unittest.TestCase):
         with scratch() as d:
             rule = self.repo(d) / "rule" / "001.md"
             rule.parent.mkdir(parents=True)
-            rule.write_text("---\ntitle: x\ncreated: 2026-10-02\nmodified: 2026-10-02\n"
-                            "verification:\n  method: written-only\n  via: \"\"\n---\n\n**001**: x MUST y.\n")
+            rule.write_text(
+                "---\ntitle: x\ncreated: 2026-10-02\nmodified: 2026-10-02\n"
+                'verification:\n  method: written-only\n  via: ""\n---\n\n**001**: x MUST y.\n'
+            )
             row = load(run(STATUS, d)[1])["rules"][0]
             self.assertEqual(row["defect"], "audience missing")
 
@@ -77,7 +81,9 @@ class PolicyStatusTests(unittest.TestCase):
             self.assertEqual(load(run(STATUS, d)[1])["gaps"], [2])
             retired = self.repo(d) / "retired"
             retired.mkdir()
-            (retired / "002.md").write_text("---\ntitle: b\nretired: 2026-10-02\nreason: gone\n---\n")
+            (retired / "002.md").write_text(
+                "---\ntitle: b\nretired: 2026-10-02\nreason: gone\n---\n"
+            )
             self.assertEqual(load(run(STATUS, d)[1])["gaps"], [])
 
 

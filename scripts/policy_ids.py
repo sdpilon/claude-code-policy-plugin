@@ -10,8 +10,8 @@ import json
 import os
 import re
 import sys
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 
 _DIGITS = re.compile(r"[0-9]+")
 

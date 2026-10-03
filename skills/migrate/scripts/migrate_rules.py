@@ -11,9 +11,19 @@ import re
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(next(p for p in Path(__file__).resolve().parents if (p / "scripts" / "policy_ids.py").exists()) / "scripts"))
-import policy_frontmatter as fm  # noqa: E402
-import policy_ids as ids  # noqa: E402
+sys.path.insert(
+    0,
+    str(
+        next(
+            p
+            for p in Path(__file__).resolve().parents
+            if (p / "scripts" / "policy_ids.py").exists()
+        )
+        / "scripts"
+    ),
+)
+import policy_frontmatter as fm
+import policy_ids as ids
 
 OLD_ID_RE = re.compile(r"^\*\*([A-Z][A-Z0-9]*-\d+)\*\*:\s*(.+)$")
 TIER_RE = re.compile(r"<!--\s*tier:\s*([a-z-]+)\s*;\s*via:\s*(.*?)\s*-->")
@@ -88,7 +98,7 @@ def main(argv):
                 if shared:
                     rationale = "TODO: see migration report"
                 elif rationale_lines:
-                    rationale = rationale_lines[0][len("Rationale:"):].strip()
+                    rationale = rationale_lines[0][len("Rationale:") :].strip()
                 else:
                     rationale = ""
 
@@ -106,7 +116,9 @@ def main(argv):
                 if group:
                     reasons.append(f"shared rationale — see group {group}")
                 if not section_known:
-                    reasons.append("could not determine section boundaries — check rationale manually")
+                    reasons.append(
+                        "could not determine section boundaries — check rationale manually"
+                    )
 
                 if not args.dry_run:
                     target = dest / f"{ids.format_id(new_id)}.md"
@@ -115,8 +127,14 @@ def main(argv):
                         body += f"\nRationale: {rationale}\n"
                     target.write_text(fm.render(fields) + "\n" + body, encoding="utf-8")
 
-                migrated.append({"source_file": str(topic), "source_id": old_id, "new_id": new_id,
-                                 "shared_rationale_group": group})
+                migrated.append(
+                    {
+                        "source_file": str(topic),
+                        "source_id": old_id,
+                        "new_id": new_id,
+                        "shared_rationale_group": group,
+                    }
+                )
                 for reason in reasons:
                     needs_review.append({"new_id": new_id, "reason": reason})
 

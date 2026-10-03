@@ -9,10 +9,22 @@ import shutil
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(next(p for p in Path(__file__).resolve().parents if (p / "scripts" / "policy_manifest.py").exists()) / "scripts"))
-import policy_manifest as pm  # noqa: E402
+sys.path.insert(
+    0,
+    str(
+        next(
+            p
+            for p in Path(__file__).resolve().parents
+            if (p / "scripts" / "policy_manifest.py").exists()
+        )
+        / "scripts"
+    ),
+)
+import policy_manifest as pm
 
-PLUGIN_ROOT = next(p for p in Path(__file__).resolve().parents if (p / "scripts" / "policy_manifest.py").exists())
+PLUGIN_ROOT = next(
+    p for p in Path(__file__).resolve().parents if (p / "scripts" / "policy_manifest.py").exists()
+)
 TEMPLATE = PLUGIN_ROOT / "templates" / "policy-readme.md"
 
 

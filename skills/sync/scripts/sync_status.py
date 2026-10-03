@@ -12,9 +12,19 @@ import re
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(next(p for p in Path(__file__).resolve().parents if (p / "scripts" / "policy_ids.py").exists()) / "scripts"))
-import policy_frontmatter as fm  # noqa: E402
-import policy_ids as ids  # noqa: E402
+sys.path.insert(
+    0,
+    str(
+        next(
+            p
+            for p in Path(__file__).resolve().parents
+            if (p / "scripts" / "policy_ids.py").exists()
+        )
+        / "scripts"
+    ),
+)
+import policy_frontmatter as fm
+import policy_ids as ids
 
 SYNCED_LINE = re.compile(r"^synced_hash:.*\n?", re.MULTILINE)
 
@@ -50,8 +60,17 @@ def main(argv):
         try:
             fields = fm.parse(text)
         except fm.FrontmatterError as e:
-            rows.append({"id": rule_id, "audience": [], "targets": [], "current_hash": content_hash(text),
-                         "synced_hash": None, "changed": True, "error": str(e)})
+            rows.append(
+                {
+                    "id": rule_id,
+                    "audience": [],
+                    "targets": [],
+                    "current_hash": content_hash(text),
+                    "synced_hash": None,
+                    "changed": True,
+                    "error": str(e),
+                }
+            )
             continue
         problems = fm.validate(fields)
         audience = fields.get("audience") if isinstance(fields.get("audience"), list) else []
