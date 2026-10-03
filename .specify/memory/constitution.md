@@ -6,7 +6,7 @@
 
 The plugin MUST ship only generic mechanism: skills, templates, and scripts that operate on
 any repo following the `.policy/` convention. It MUST NOT ship any project's actual
-obligations, its CI audit script, or its constitution/principles doc. Riposte-specific (or any
+rules, its CI audit script, or its constitution/principles doc. Riposte-specific (or any
 other single-project) content MUST NOT appear in shipped files; examples drawn from a real
 project MUST be generalized or clearly marked as illustrative.
 
@@ -15,15 +15,24 @@ Project content leaking in makes it wrong for every other consumer.
 
 ### II. Single Source of Truth
 
-`.policy/<topic>.md` is the only authoritative statement of an obligation. Derived forms
+Each rule is authoritative only in its own file, `.policy/rule/<id>.md`, which MAY be nested
+in organizational subdirectories that carry no identity meaning. Derived forms
 (`CONTRIBUTING.md`, the agent-operational doc such as `CLAUDE.md` or `.claude/rules/`) MUST be
-treated as outputs and MUST NOT be edited as if they were the source. Obligation IDs
-(`<PREFIX>-N`) MUST be stable: never renumbered, never reused. Each obligation MUST be one
-sentence with exactly one modal verb (MUST / SHOULD / MUST NOT / MAY).
+treated as outputs and MUST NOT be edited as if they were the source.
 
-Rationale: drift between the source and its derived docs is silent and no test catches it.
-Stable IDs and a strict sentence shape are what make drift detection and status reporting
-mechanical.
+Rule IDs MUST be integers, zero-padded to a minimum of three digits in filenames and bold
+statement tokens (e.g. `047`), with no alphabetic prefix. IDs MUST be unique across the whole
+`.policy/rule/` tree. Allocation MUST take one greater than the highest ID present, including
+tombstones, and MUST re-check for collision immediately before writing.
+
+An ID MUST NOT be reused, even after its rule is deleted. A retired rule MUST leave a
+frontmatter-only tombstone at `.policy/retired/<id>.md`, which counts toward allocation.
+
+Each rule MUST be one sentence with exactly one modal verb (MUST / SHOULD / MUST NOT / MAY).
+
+Rationale: drift between a source and its derived docs is silent, and no test catches it.
+One rule per file keeps diffs and ownership local and removes the arbitrary topic decision.
+Stable, never-reused IDs keep references and drift detection meaningful over time.
 
 ### III. Checkpointed Steps
 
@@ -40,7 +49,7 @@ skill by hand.
 
 ### IV. Deterministic Before Generative
 
-Wherever an answer can be computed (extracting obligations, parsing CI job structure, hashing
+Wherever an answer can be computed (extracting rules, parsing CI job structure, hashing
 content to detect staleness), it MUST be computed by a script, not re-derived by an LLM reading
 files on every run. LLM judgment is reserved for what can't be mechanized: wording, policy vs.
 preference, and whether a derived doc still means the same thing as its source.
@@ -50,9 +59,9 @@ give a different answer on each run.
 
 ### V. Honest Enforcement Reporting
 
-Skills MUST report an obligation's real enforcement tier (CI-blocking, CI-checked
-non-blocking, human-verified only, written-policy-only) and MUST NOT imply that written policy,
-or policy loaded into agent context, is enforced. Uncertain classifications MUST be labeled as
+Skills MUST report a rule's real enforcement tier (CI-blocking, CI-checked non-blocking,
+human-verified only, written-policy-only) and MUST NOT imply that written policy, or policy
+loaded into agent context, is enforced. Uncertain classifications MUST be labeled as
 best-effort rather than presented as fact.
 
 Rationale: agent-facing instructions (CLAUDE.md, rules) are context, not enforcement. The
@@ -77,7 +86,8 @@ plugin's value depends on never overstating what is actually checked.
 - Behavior changes to a skill SHOULD be compared side by side against the original in-repo
   riposte skills before any cutover in that repo.
 - Deferred phases (hash-manifest safe-update, human-vs-agent scoping) MUST be recorded as
-  deferred in README.md rather than half-built in shipped skills.
+  entries in `ROADMAP.yaml` at the repo root, not in README.md, and MUST NOT be half-built
+  in shipped skills.
 - README.md MUST describe the plugin's current state only, not a changelog of how it got there.
 
 ## Governance
@@ -91,4 +101,4 @@ commit. Versioning follows semantic versioning: MAJOR for removing or redefining
 MINOR for adding a principle or section or materially expanding one, PATCH for clarifications
 and wording.
 
-**Version**: 1.0.0 | **Ratified**: 2026-10-02 | **Last Amended**: 2026-10-02
+**Version**: 2.0.1 | **Ratified**: 2026-10-02 | **Last Amended**: 2026-10-02
