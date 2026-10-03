@@ -33,6 +33,12 @@ inventory, classify once, cache the annotation" design) is unchanged.
 
 Unchanged invocation shape: `policy-status.sh [args]` → `policy_status.py [args]`.
 
+## Output (as implemented)
+
+The top-level array is keyed `rules` (not `obligations`), and the output also carries
+`gaps` (FR-017), `repo_root`, and `ci_jobs` (the best-effort CI inventory kept from the
+previous version). Each rule row may also carry `defect`.
+
 ## Output (updated schema)
 
 ```json

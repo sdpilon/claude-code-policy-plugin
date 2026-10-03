@@ -7,7 +7,7 @@
   "plugins": [
     {
       "name": "policy",
-      "description": "Tooling for a repo's committed process-policy layer: a .policy/<topic>.md source of truth with its two derived forms (a human narrative doc, an agent-operational doc), plus the judgment calls around adding, syncing, auditing, and reporting on it. Ships the mechanism, not any project's actual obligations.",
+      "description": "Tooling for a repo's committed process-policy layer: one rule per file under .policy/rule/ (zero-padded IDs), with its two derived forms (a human narrative doc, an agent-operational doc), plus the judgment calls around adding, syncing, auditing, migrating, retiring, and reporting on rules. Ships the mechanism, not any project's actual rules.",
       "version": "0.1.0",
       "source": "./",
       "author": {

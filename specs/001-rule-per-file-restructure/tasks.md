@@ -34,14 +34,14 @@ Structure for the full tree.
 
 **Purpose**: Directory scaffolding this feature's scripts land in.
 
-- [ ] T001 Create the shared `scripts/` directory and `tests/` directory (with
+- [X] T001 Create the shared `scripts/` directory and `tests/` directory (with
   `tests/__init__.py`). Decide and document, as a short comment at the top of
   `scripts/policy_ids.py` and `scripts/policy_frontmatter.py` (written in T003/T004),
   how a script under `skills/<name>/scripts/` locates and imports the shared
   `scripts/` library (e.g. walking up from the script's own path to find the repo
   root, the same pattern `.specify/extensions/git/scripts/bash/create-new-feature-branch.sh`
   already uses to locate `common.sh`).
-- [ ] T002 [P] Create empty `skills/add/scripts/`, `skills/sync/scripts/`, and
+- [X] T002 [P] Create empty `skills/add/scripts/`, `skills/sync/scripts/`, and
   `skills/migrate/scripts/` directories.
 
 **Checkpoint**: Directory layout matches plan.md's Project Structure.
@@ -54,7 +54,7 @@ Structure for the full tree.
 
 **⚠️ CRITICAL**: No user story task can begin until this phase is complete.
 
-- [ ] T003 [P] Implement `scripts/policy_frontmatter.py` per
+- [X] T003 [P] Implement `scripts/policy_frontmatter.py` per
   `contracts/policy_frontmatter.md` — `parse`, `validate`, `render`, and the `read`/
   `validate` CLI subcommands. Enforce data-model.md's Rule frontmatter schema exactly:
   `title` required string; `tags` optional list of strings, default `[]`; `created`
@@ -63,7 +63,7 @@ Structure for the full tree.
   restricted to `{ci-blocking, ci-checked, human-verified, written-only}` with a
   free-text `via`; `synced_hash` optional sha256-hex string or absent. No third-party
   dependency (research.md Decision 1).
-- [ ] T004 [P] Implement `scripts/policy_ids.py` per `contracts/policy_ids.md` —
+- [X] T004 [P] Implement `scripts/policy_ids.py` per `contracts/policy_ids.md` —
   `highest_id(rule_root, retired_root)` (recursive scan of both directories, tombstones
   included, returns `0` on an empty/missing tree), `format_id` (zero-pad to a minimum of
   three digits, growing beyond that as needed, e.g. `47 -> "047"`, `1000 -> "1000"`),
@@ -72,12 +72,12 @@ Structure for the full tree.
   bounded retry, skipping any ID that has a tombstone, no lock file), and the `highest`
   CLI subcommand with `--dir`, `--retired-dir`, and a `highest_formatted` field in its
   output.
-- [ ] T005 [P] Write `tests/test_policy_frontmatter.py`: round-trip `parse` → `render`
+- [X] T005 [P] Write `tests/test_policy_frontmatter.py`: round-trip `parse` → `render`
   preserves key order; `validate` fails when `audience` is missing or empty; `validate`
   fails when `audience` contains a value outside `{human, agent}`; `validate` fails
   when `verification.method` is outside the four enumerated values; `parse` raises
   `FrontmatterError` on a file with no frontmatter block (CLI exit code `2`).
-- [ ] T006 [P] Write `tests/test_policy_ids.py`: `highest_id` returns `0` on an empty or
+- [X] T006 [P] Write `tests/test_policy_ids.py`: `highest_id` returns `0` on an empty or
   missing tree; finds the correct maximum regardless of organizational-subdirectory depth
   (FR-005) and zero-padding width; counts tombstones, so the maximum never drops after a
   retirement (FR-004); `format_id` zero-pads to three digits and grows without re-padding
@@ -100,17 +100,17 @@ separate files with different IDs, neither modifying the other.
 
 ### Tests for User Story 1
 
-- [ ] T007 [P] [US1] Write `tests/test_add_rule.py`: a successful call returns
+- [X] T007 [P] [US1] Write `tests/test_add_rule.py`: a successful call returns
   `{"id", "path"}` matching `contracts/add_rule.md`; a missing or invalid `--audience`
   exits `2` and writes no file; an invalid `--verification-method` exits `2` and
   writes no file; two sequential calls never collide on ID.
 
 ### Implementation for User Story 1
 
-- [ ] T008 [US1] Implement `skills/add/scripts/add_rule.py` per
+- [X] T008 [US1] Implement `skills/add/scripts/add_rule.py` per
   `contracts/add_rule.md`, using `policy_ids.allocate_id` and
   `policy_frontmatter.render` (depends on T003, T004).
-- [ ] T009 [US1] Update `skills/add/SKILL.md`: describe writing to
+- [X] T009 [US1] Update `skills/add/SKILL.md`: describe writing to
   `.policy/rule/<id>.md` via `add_rule.py` instead of appending to a shared topic
   file; document the required `audience` field and the four `verification.method`
   values; rename "obligation" → "rule" throughout (research.md Decision 5).
@@ -130,7 +130,7 @@ run sync; confirm each appears only in its matching derived document.
 
 ### Tests for User Story 2
 
-- [ ] T010 [P] [US2] Write `tests/test_sync_status.py`: a rule with no `synced_hash` is
+- [X] T010 [P] [US2] Write `tests/test_sync_status.py`: a rule with no `synced_hash` is
   always `"changed": true`; `"changed"` is `false` only when `current_hash == synced_hash`;
   `targets` follows `audience` exactly (`human` → `CONTRIBUTING.md`; `agent` → `CLAUDE.md`
   and `.claude/rules/<id>.md`; both audiences → both sets, and a human-only rule never
@@ -139,10 +139,10 @@ run sync; confirm each appears only in its matching derived document.
 
 ### Implementation for User Story 2
 
-- [ ] T011 [US2] Implement `skills/sync/scripts/sync_status.py` per
+- [X] T011 [US2] Implement `skills/sync/scripts/sync_status.py` per
   `contracts/sync_status.md`, including the mechanically derived `targets` list
   (depends on T003, T004).
-- [ ] T012 [US2] Update `skills/sync/SKILL.md`: read `sync_status.py`'s output and use each
+- [X] T012 [US2] Update `skills/sync/SKILL.md`: read `sync_status.py`'s output and use each
   rule's `targets` list as the only source for which derived documents it updates (no
   inferring from `audience`); skip any rule reported `"changed": false` (FR-008); after an
   approved propagation, write the new `synced_hash` back into that rule's frontmatter via
@@ -163,7 +163,7 @@ confirm the output lists ID and title together, with tier sourced from frontmatt
 
 ### Tests for User Story 3
 
-- [ ] T013 [P] [US3] Write `tests/test_policy_status.py`: the scan finds rules nested under
+- [X] T013 [P] [US3] Write `tests/test_policy_status.py`: the scan finds rules nested under
   organizational subdirectories and also works on a flat `.policy/rule/` (FR-014); a
   zero-padded bare-integer line (`**047**:`) matches, an old-style prefixed line
   (`**SEC-7**:`) does not, and files directly under `.policy/` are ignored; a captured ID
@@ -176,14 +176,14 @@ confirm the output lists ID and title together, with tier sourced from frontmatt
 
 ### Implementation for User Story 3
 
-- [ ] T014 [US3] Update `skills/status/scripts/policy_status.py`: recursive walk of
+- [X] T014 [US3] Update `skills/status/scripts/policy_status.py`: recursive walk of
   `.policy/rule/`; replace `OBLIGATION_RE` with a bare-integer pattern and parse the
   captured digits via `scripts/policy_ids.py`'s `parse_id`; replace the inline
   `<!-- tier: ...; via: ... -->` read with `policy_frontmatter.parse`'s `verification`
   field; add `title` to each output row; report missing-audience defects and ID gaps
   (checking `.policy/retired/` as well) per `contracts/policy_status.md` (depends on T003,
   T004). `policy-status.sh`'s wrapper shape is unchanged.
-- [ ] T015 [US3] Update `skills/status/SKILL.md` and `skills/audit/SKILL.md`:
+- [X] T015 [US3] Update `skills/status/SKILL.md` and `skills/audit/SKILL.md`:
   describe the new `.policy/rule/` layout, the frontmatter-sourced `verification`
   field, and `title` appearing in status output; rename "obligation" → "rule"
   throughout both.
@@ -204,7 +204,7 @@ pair flagged rather than silently duplicated or dropped.
 
 ### Tests for User Story 4
 
-- [ ] T016 [P] [US4] Write `tests/test_migrate_rules.py`: every bolded obligation in a
+- [X] T016 [P] [US4] Write `tests/test_migrate_rules.py`: every bolded obligation in a
   sample topic file produces exactly one new rule file with a freshly allocated ID;
   a pair that shared one rationale paragraph is reported under one
   `shared_rationale_group` in `needs_review` rather than duplicated or dropped; every
@@ -215,9 +215,9 @@ pair flagged rather than silently duplicated or dropped.
 
 ### Implementation for User Story 4
 
-- [ ] T017 [US4] Implement `skills/migrate/scripts/migrate_rules.py` per
+- [X] T017 [US4] Implement `skills/migrate/scripts/migrate_rules.py` per
   `contracts/migrate_rules.md` (depends on T003, T004).
-- [ ] T018 [US4] Create `skills/migrate/SKILL.md` (new skill, exposed as
+- [X] T018 [US4] Create `skills/migrate/SKILL.md` (new skill, exposed as
   `/policy:migrate`): run `migrate_rules.py`, then walk the user through every
   `needs_review` entry as a guided cleanup pass (Constitution Principle III) rather
   than treating a successful mechanical split as the finished job.
@@ -238,7 +238,7 @@ returns an ID above the retired one.
 
 ### Tests for User Story 5
 
-- [ ] T019 [P] [US5] Write `tests/test_retire_rule.py`: retiring an existing rule writes
+- [X] T019 [P] [US5] Write `tests/test_retire_rule.py`: retiring an existing rule writes
   `.policy/retired/<fmt>.md` with frontmatter `id`, `title` (copied), `retired` (ISO date),
   `reason`, and optional `superseded_by`, then removes the rule file; a missing rule exits
   `1` with no writes; an existing tombstone for the ID exits `1` with no writes; an empty
@@ -248,10 +248,10 @@ returns an ID above the retired one.
 
 ### Implementation for User Story 5
 
-- [ ] T020 [US5] Implement `skills/retire/scripts/retire_rule.py` per
+- [X] T020 [US5] Implement `skills/retire/scripts/retire_rule.py` per
   `contracts/retire_rule.md`, using `policy_frontmatter.render` and `policy_ids.format_id`
   (depends on T003, T004).
-- [ ] T021 [US5] Create `skills/retire/SKILL.md` (new skill, exposed as `/policy:retire`):
+- [X] T021 [US5] Create `skills/retire/SKILL.md` (new skill, exposed as `/policy:retire`):
   before running `retire_rule.py`, ask the person for the reason and any `superseded_by`
   via `AskUserQuestion` (Constitution Principle III checkpoint); report the tombstone path
   afterward. Use "rule" terminology throughout.
@@ -265,28 +265,28 @@ User Story 5 is independently testable.
 
 **Purpose**: Work that spans every story rather than belonging to one.
 
-- [ ] T022 [P] Replace `templates/policy-template.md` with `templates/rule-template.md`:
+- [X] T022 [P] Replace `templates/policy-template.md` with `templates/rule-template.md`:
   a zero-padded bare-numeric-ID placeholder (e.g. `047`, no alphabetic prefix), the
   full frontmatter block, a short `#` title heading, and room for "See also" links in
   the rationale, matching data-model.md's Rule schema.
-- [ ] T023 [P] Update `skills/judge/SKILL.md` to describe the new
+- [X] T023 [P] Update `skills/judge/SKILL.md` to describe the new
   `.policy/rule/<id>.md` convention when handing a judged-as-policy rule off to
   `/policy:add`.
-- [ ] T024 [P] Update `README.md`'s remaining "obligation" references (the Skills
+- [X] T024 [P] Update `README.md`'s remaining "obligation" references (the Skills
   list and Conventions section) to "rule" and the `.policy/rule/<id>.md` layout.
-- [ ] T025 [P] Update `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`
+- [X] T025 [P] Update `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`
   descriptions to drop "obligation" and the old topic-file wording.
-- [ ] T026 Run a repo-wide `grep -ri obligation` sweep (excluding
+- [X] T026 Run a repo-wide `grep -ri obligation` sweep (excluding
   `.specify/memory/constitution.md` and this feature's own `spec.md`, both
   intentionally excluded per research.md Decision 5) and confirm zero remaining
   matches in plugin-owned files (FR-013). Depends on T009, T012, T015, T018, T022,
   T023, T024, T025.
-- [ ] T027 Validate the seven changed or new skill descriptions (`add`, `sync`, `status`,
+- [X] T027 Validate the seven changed or new skill descriptions (`add`, `sync`, `status`,
   `audit`, `judge`, `migrate`, `retire`) with fresh, context-free subagents against the
   Constitution's Plugin Constraints gate — at least one positive-trigger case per skill
   and one adjacent negative case — before considering the description changes done.
   Depends on T009, T012, T015, T018, T021, T023.
-- [ ] T028 Run `quickstart.md`'s five scenarios end-to-end in a scratch directory and
+- [X] T028 Run `quickstart.md`'s five scenarios end-to-end in a scratch directory and
   confirm every pass condition, including the cross-story one (a rule moved into an
   organizational subdirectory is still found by the updated `policy_status.py`).
   Depends on T008, T011, T014, T017.

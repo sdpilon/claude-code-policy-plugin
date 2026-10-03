@@ -38,7 +38,8 @@ python3 skills/sync/scripts/sync_status.py --dir .policy/rule
 `agent` → `CLAUDE.md` and `.claude/rules/<id>.md`), so `/policy:sync` never infers the
 target. `id` is a plain integer, as everywhere outside a rule's filename and bold-line token
 (see `policy_ids.md`'s `format_id`/`parse_id`). `current_hash` is a sha256 of the rule
-file's full current content. `changed` is
+file's content with its `synced_hash:` line removed. Excluding that line keeps writing
+the new `synced_hash` from making the rule look changed again. `changed` is
 `current_hash != synced_hash` (a rule with no `synced_hash` yet is always `changed`).
 `/policy:sync` MUST skip proposing an update for any rule where `changed` is `false`
 (FR-008) and, after a propagation is approved and applied, write the new `synced_hash`
