@@ -7,9 +7,7 @@ FR-010). Customized, missing, no-longer-shipped, and user-owned paths are report
 See specs/002-policy-init-update/contracts/commands.md.
 """
 
-import os
 import sys
-import tempfile
 from pathlib import Path
 
 PLUGIN_ROOT = next(p for p in Path(__file__).resolve().parents if (p / "scripts" / "policy_manifest.py").exists())
@@ -28,19 +26,6 @@ LABELS = {
     "no-longer-shipped": "no-longer-shipped",
     "user-owned": "user-owned",
 }
-
-
-def write_bytes_atomic(data, dest):
-    dest.parent.mkdir(parents=True, exist_ok=True)
-    fd, tmp = tempfile.mkstemp(dir=dest.parent, prefix=".update-", suffix=".tmp")
-    try:
-        with os.fdopen(fd, "wb") as handle:
-            handle.write(data)
-        os.replace(tmp, dest)
-    except BaseException:
-        if os.path.exists(tmp):
-            os.unlink(tmp)
-        raise
 
 
 def main():
@@ -71,12 +56,12 @@ def main():
             continue
         if state == "stale":
             old_version = entry["shipped_version"]
-            write_bytes_atomic(template.read_bytes(), target)
+            pm.atomic_write_bytes(target, template.read_bytes())
             files[path] = {"shipped_version": shipped_version, "sha256": template_hash}
             groups["updated"].append(f"{path}  ({old_version} -> {shipped_version})")
             changed = True
         elif state == "new":
-            write_bytes_atomic(template.read_bytes(), target)
+            pm.atomic_write_bytes(target, template.read_bytes())
             files[path] = {"shipped_version": shipped_version, "sha256": template_hash}
             groups["created"].append(path)
             changed = True

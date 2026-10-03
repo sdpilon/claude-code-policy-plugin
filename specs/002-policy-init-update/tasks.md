@@ -161,3 +161,7 @@
 **Incremental**: add US2 (safe update), then US3 (fail-closed hardening), then Polish. Each story leaves the suite green before the next begins.
 
 **Stop points**: after each checkpoint, run the suite and the matching quickstart scenarios before continuing.
+
+## Phase 6: Convergence
+
+- [X] T034 Preserve the target file's permission bits (or default to 0644 under the umask) when atomically replacing a tracked file in `skills/update/scripts/update_policy.py` and `scripts/policy_manifest.py`, so an update does not change a shipped README from 0644 to 0600; write a failing test in `tests/test_update_policy.py` first per research.md §6 (gap: partial, LOW)

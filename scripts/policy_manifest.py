@@ -9,6 +9,7 @@ import difflib
 import hashlib
 import json
 import os
+import stat
 import tempfile
 from pathlib import Path
 
@@ -44,20 +45,39 @@ def load_manifest(path):
     return data
 
 
-def write_manifest(path, data):
-    """Atomically write the manifest: temp file in the same directory, then os.replace."""
+def _target_mode(path):
+    """Mode to give a replaced file: keep the existing file's bits, or the umask default for a new one."""
+    if path.exists():
+        return stat.S_IMODE(path.stat().st_mode)
+    umask = os.umask(0)
+    os.umask(umask)
+    return 0o666 & ~umask
+
+
+def atomic_write_bytes(path, data):
+    """Replace path atomically: temp file in the same directory, chmod, then os.replace.
+
+    The temp file is created 0600 by mkstemp, so its mode is set explicitly to the target's
+    mode (plan research.md §6). Without this, a 0644 README becomes 0600 after an update.
+    """
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=".manifest-", suffix=".tmp")
+    mode = _target_mode(path)
+    fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=".policy-", suffix=".tmp")
     try:
-        with os.fdopen(fd, "w", encoding="utf-8") as handle:
-            json.dump(data, handle, indent=2)
-            handle.write("\n")
+        with os.fdopen(fd, "wb") as handle:
+            handle.write(data)
+        os.chmod(tmp, mode)
         os.replace(tmp, path)
     except BaseException:
         if os.path.exists(tmp):
             os.unlink(tmp)
         raise
+
+
+def write_manifest(path, data):
+    """Write the manifest as two-space JSON with a trailing newline, atomically."""
+    atomic_write_bytes(path, (json.dumps(data, indent=2) + "\n").encode("utf-8"))
 
 
 def fingerprint(path):
