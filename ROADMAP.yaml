@@ -2,16 +2,6 @@
 # Each entry: id, status, title, summary, and (optionally) informed_by —
 # a pointer to prior art this phase would build from.
 
-- id: init-and-safe-update
-  status: in-progress
-  title: Plugin init + hash-manifest safe-update
-  summary: >
-    A /policy:init skill to bootstrap .policy/ in a new project, plus a
-    hash-manifest mechanism for tracking which shipped plugin files a
-    consuming project has customized — modeled on Spec Kit's
-    integration.json + integrations/*.manifest.json pattern.
-  informed_by: .specify/integration.json (this repo's own Spec Kit scaffolding)
-
 - id: common-policy-topics
   status: deferred
   title: Catalog of common policy topics for new projects
