@@ -1,1 +1,4 @@
 .DS_Store
+
+entry-description.md
+__pycache__/
