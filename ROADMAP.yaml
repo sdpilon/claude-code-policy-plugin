@@ -3,7 +3,7 @@
 # a pointer to prior art this phase would build from.
 
 - id: init-and-safe-update
-  status: deferred
+  status: in-progress
   title: Plugin init + hash-manifest safe-update
   summary: >
     A /policy:init skill to bootstrap .policy/ in a new project, plus a
