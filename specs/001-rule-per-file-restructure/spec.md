@@ -243,6 +243,9 @@ the allocation and frontmatter foundations, not on the other stories.
   human-readable title, decorative tags, creation/modification timestamps, a required
   audience (human, agent, or both), a verification/enforcement classification, its own
   rationale, and optional references to related rules.
+- **Tombstone**: the frontmatter-only record left when a rule is retired, at
+  `.policy/retired/<id>.md`. Records the ID, title, retirement date, and reason, and
+  counts toward ID allocation so the ID is never reissued (FR-004, FR-016).
 - **Derived Document**: a human-facing or agent-operational document whose content is
   kept in sync with the set of rules whose declared audience includes that document's
   audience.

@@ -61,18 +61,17 @@ counts expected in the tens to low hundreds.
 | Principle | Check | Result |
 |---|---|---|
 | I. Mechanism, Never Content | Migration tool and templates operate generically; no project's real rules are shipped. | PASS |
-| II. Single Source of Truth | The constitution's current text hard-codes `.policy/<topic>.md` as the convention — this feature replaces that convention in practice while deliberately leaving the written text unchanged until a separate amendment. **Violation, justified below.** | FLAGGED |
+| II. Single Source of Truth | Constitution v2.0.0 (and v2.0.1) redefined Principle II to describe this layout, so the written text now matches the design. | PASS |
 | III. Checkpointed Steps | `add`/`sync`/`migrate` each remain one step with a checkpoint before the next; migrate flags shared-rationale cases for a human decision rather than silently resolving them. | PASS |
 | IV. Deterministic Before Generative | ID allocation, frontmatter parsing, and sync's change-detection are all pushed into scripts, not re-derived by the model each run. | PASS |
 | V. Honest Enforcement Reporting | `verification` frontmatter replaces the inline tier comment with no change in what gets reported. | PASS |
 | Plugin Constraints — native features over reimplementation | No re-implementation of `.claude/rules/`-equivalent behavior. | PASS |
 | Plugin Constraints — skill descriptions validated | `add`/`sync`/`status`/`audit`/`judge` descriptions change materially (new ID scheme, `audience` field). Fresh-context trigger validation is required before this work is done — tracked as a task, not skipped. | PASS (tracked) |
 
-**Complexity Tracking** (Principle II):
-
-| Violation | Why Needed | Simpler Alternative Rejected Because |
-|---|---|---|
-| Constitution Principle II's text still describes the old `.policy/<topic>.md` convention after this feature ships, until a separate `/speckit-constitution` amendment runs. | The spec's own Assumptions section explicitly scoped the constitution amendment out of this feature — writing a MAJOR version bump before the new convention has shipped and been used would mean amending governance text speculatively, ahead of the design it's supposed to describe. | Amending the constitution in this same plan was rejected because the user explicitly decided this sequencing during brainstorming (ship the restructuring, then amend governance to match), not because it's technically harder. |
+**Complexity Tracking** (Principle II): resolved. The earlier deviation (written
+constitution still describing the old `.policy/<topic>.md` layout) was closed by the
+MAJOR amendment to v2.0.0, then the PATCH to v2.0.1. No violations remain, so this table
+has no rows.
 
 ## Project Structure
 
@@ -149,7 +148,7 @@ exposed as a discoverable `/policy:*` command.
 
 ## Constitution Check — Post-Design Re-evaluation
 
-No new violations beyond the already-flagged, already-justified Principle II gap.
+No violations remain. Principle II was resolved by the v2.0.0 amendment (see Complexity Tracking).
 Design choices in Phase 0/1 actively reinforce rather than strain the other
 principles: both new scripts (`policy_ids.py`, `policy_frontmatter.py`) push mechanical
 decisions out of the skills entirely (Principle IV); `migrate_rules.py`'s
