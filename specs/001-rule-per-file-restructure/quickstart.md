@@ -76,6 +76,21 @@ python3 <plugin>/skills/migrate/scripts/migrate_rules.py \
 shared rationale under one `shared_rationale_group` rather than silently duplicating or
 discarding the shared paragraph.
 
+## Scenario 5 — Retire a rule without reissuing its ID (User Story 5)
+
+```sh
+python3 <plugin>/skills/retire/scripts/retire_rule.py \
+  --id 2 --reason "PR approval now enforced by branch protection"
+# Expect: {"id": 2, "tombstone": ".policy/retired/002.md", "removed": ".policy/rule/002.md"}
+python3 <plugin>/skills/add/scripts/add_rule.py \
+  --statement "Releases MUST be tagged." --title "Tag releases" \
+  --audience human --verification-method written-only
+# Expect: {"id": 3, ...} — the retired ID 2 is not reissued
+```
+
+**Pass condition**: `.policy/rule/002.md` is gone; `.policy/retired/002.md` exists with
+its `reason`; the new rule's ID is 3, not 2; `/policy:status` reports no gap at ID 2.
+
 ## Full teardown
 
 ```sh

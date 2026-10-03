@@ -19,7 +19,7 @@ implementation and testing of each story.
 ## Format: `[ID] [P?] [Story] Description`
 
 - **[P]**: Can run in parallel (different files, no dependencies)
-- **[Story]**: Which user story this task belongs to (US1–US4)
+- **[Story]**: Which user story this task belongs to (US1–US5)
 - File paths are exact, matching plan.md's Project Structure
 
 ## Path Conventions
@@ -64,24 +64,26 @@ Structure for the full tree.
   free-text `via`; `synced_hash` optional sha256-hex string or absent. No third-party
   dependency (research.md Decision 1).
 - [ ] T004 [P] Implement `scripts/policy_ids.py` per `contracts/policy_ids.md` —
-  `highest_id` (recursive scan, returns `0` on an empty/missing tree), `format_id`
-  (zero-pad to a minimum of three digits, growing beyond that as needed, e.g.
-  `47 -> "047"`, `1000 -> "1000"`), `parse_id` (inverse of `format_id`, tolerating
-  either padded or unpadded input), `allocate_id` (scan-then-recheck-before-write
-  with bounded retry, no lock file), and the `highest` CLI subcommand.
+  `highest_id(rule_root, retired_root)` (recursive scan of both directories, tombstones
+  included, returns `0` on an empty/missing tree), `format_id` (zero-pad to a minimum of
+  three digits, growing beyond that as needed, e.g. `47 -> "047"`, `1000 -> "1000"`),
+  `parse_id` (inverse of `format_id`, tolerating padded or unpadded input),
+  `allocate_id(rule_root, retired_root, reserve)` (scan-then-recheck-before-write with
+  bounded retry, skipping any ID that has a tombstone, no lock file), and the `highest`
+  CLI subcommand with `--dir`, `--retired-dir`, and a `highest_formatted` field in its
+  output.
 - [ ] T005 [P] Write `tests/test_policy_frontmatter.py`: round-trip `parse` → `render`
   preserves key order; `validate` fails when `audience` is missing or empty; `validate`
   fails when `audience` contains a value outside `{human, agent}`; `validate` fails
   when `verification.method` is outside the four enumerated values; `parse` raises
   `FrontmatterError` on a file with no frontmatter block (CLI exit code `2`).
-- [ ] T006 [P] Write `tests/test_policy_ids.py`: `highest_id` returns `0` on an empty
-  or missing `.policy/rule/` tree; `highest_id` finds the correct maximum regardless
-  of how deeply rules are nested in organizational subdirectories (FR-005) and
-  regardless of zero-padding width; `format_id` zero-pads to a minimum of three
-  digits and grows past that without re-padding (`1000 -> "1000"`, not `"01000"`);
-  `parse_id` round-trips `format_id`'s output and also accepts unpadded digits;
-  `allocate_id` retries past a reservation collision and raises after a bounded
-  number of failed attempts rather than looping forever.
+- [ ] T006 [P] Write `tests/test_policy_ids.py`: `highest_id` returns `0` on an empty or
+  missing tree; finds the correct maximum regardless of organizational-subdirectory depth
+  (FR-005) and zero-padding width; counts tombstones, so the maximum never drops after a
+  retirement (FR-004); `format_id` zero-pads to three digits and grows without re-padding
+  (`1000 -> "1000"`); `parse_id` round-trips `format_id`'s output and accepts unpadded
+  digits; `allocate_id` skips any ID that has a tombstone; `allocate_id` retries past a
+  reservation collision and raises after a bounded number of failed attempts.
 
 **Checkpoint**: Both shared scripts exist and pass their tests — every user story can
 now proceed.
@@ -128,21 +130,23 @@ run sync; confirm each appears only in its matching derived document.
 
 ### Tests for User Story 2
 
-- [ ] T010 [P] [US2] Write `tests/test_sync_status.py`: a rule with no `synced_hash`
-  is always reported `"changed": true`; `"changed"` is `false` only when
-  `current_hash == synced_hash`; a rule with `audience: [human, agent]` is reported
-  for both audiences; a rule that fails frontmatter validation is included with
+- [ ] T010 [P] [US2] Write `tests/test_sync_status.py`: a rule with no `synced_hash` is
+  always `"changed": true`; `"changed"` is `false` only when `current_hash == synced_hash`;
+  `targets` follows `audience` exactly (`human` → `CONTRIBUTING.md`; `agent` → `CLAUDE.md`
+  and `.claude/rules/<id>.md`; both audiences → both sets, and a human-only rule never
+  lists an agent target); a rule that fails frontmatter validation is included with
   `"changed": true` and an added `"error"` field (per `contracts/sync_status.md`).
 
 ### Implementation for User Story 2
 
 - [ ] T011 [US2] Implement `skills/sync/scripts/sync_status.py` per
-  `contracts/sync_status.md` (depends on T003, T004).
-- [ ] T012 [US2] Update `skills/sync/SKILL.md`: read `sync_status.py`'s output to
-  decide which rules need which derived-document update by `audience`; skip any rule
-  reported `"changed": false` (FR-008); after an approved propagation, write the new
-  `synced_hash` back into that rule's frontmatter via `policy_frontmatter.render`;
-  rename "obligation" → "rule" throughout.
+  `contracts/sync_status.md`, including the mechanically derived `targets` list
+  (depends on T003, T004).
+- [ ] T012 [US2] Update `skills/sync/SKILL.md`: read `sync_status.py`'s output and use each
+  rule's `targets` list as the only source for which derived documents it updates (no
+  inferring from `audience`); skip any rule reported `"changed": false` (FR-008); after an
+  approved propagation, write the new `synced_hash` back into that rule's frontmatter via
+  `policy_frontmatter.render`; rename "obligation" → "rule" throughout.
 
 **Checkpoint**: Sync no longer infers audience — User Story 2 is independently
 testable without User Story 1 being complete.
@@ -159,22 +163,26 @@ confirm the output lists ID and title together, with tier sourced from frontmatt
 
 ### Tests for User Story 3
 
-- [ ] T013 [P] [US3] Write `tests/test_policy_status.py`: the scan finds rules nested
-  under organizational subdirectories; a zero-padded bare-integer line (`**047**:`)
-  matches, an old-style prefixed line (`**SEC-7**:`) does not; a captured ID string
-  parses to a plain integer regardless of leading zeros; `tier`/`via` come from the
-  `verification` frontmatter field, not an inline comment; a rule with no
-  `verification` field (or an out-of-enum `method`) reports `tier: "unclassified"`;
-  every output row includes `title` (per `contracts/policy_status.md`).
+- [ ] T013 [P] [US3] Write `tests/test_policy_status.py`: the scan finds rules nested under
+  organizational subdirectories and also works on a flat `.policy/rule/` (FR-014); a
+  zero-padded bare-integer line (`**047**:`) matches, an old-style prefixed line
+  (`**SEC-7**:`) does not, and files directly under `.policy/` are ignored; a captured ID
+  string parses to a plain integer regardless of leading zeros; `tier`/`via` come from the
+  `verification` frontmatter field, not an inline comment; a rule with no `verification`
+  field (or an out-of-enum `method`) reports `tier: "unclassified"`; a rule with no
+  `audience` is reported as `"defect": "audience missing"`; an ID gap with no tombstone is
+  listed under `"gaps"`, and a gap covered by a tombstone is not (FR-017); every output row
+  includes `title` (per `contracts/policy_status.md`).
 
 ### Implementation for User Story 3
 
-- [ ] T014 [US3] Update `skills/status/scripts/policy_status.py`: change the scan to
-  a recursive walk of `.policy/rule/`; replace `OBLIGATION_RE` with a bare-integer
-  pattern and parse the captured digits via `scripts/policy_ids.py`'s `parse_id`;
-  replace the inline `<!-- tier: ...; via: ... -->` read with
-  `policy_frontmatter.parse`'s `verification` field; add `title` to each output row
-  (depends on T003). `policy-status.sh`'s wrapper shape is unchanged.
+- [ ] T014 [US3] Update `skills/status/scripts/policy_status.py`: recursive walk of
+  `.policy/rule/`; replace `OBLIGATION_RE` with a bare-integer pattern and parse the
+  captured digits via `scripts/policy_ids.py`'s `parse_id`; replace the inline
+  `<!-- tier: ...; via: ... -->` read with `policy_frontmatter.parse`'s `verification`
+  field; add `title` to each output row; report missing-audience defects and ID gaps
+  (checking `.policy/retired/` as well) per `contracts/policy_status.md` (depends on T003,
+  T004). `policy-status.sh`'s wrapper shape is unchanged.
 - [ ] T015 [US3] Update `skills/status/SKILL.md` and `skills/audit/SKILL.md`:
   describe the new `.policy/rule/` layout, the frontmatter-sourced `verification`
   field, and `title` appearing in status output; rename "obligation" → "rule"
@@ -219,32 +227,66 @@ every ambiguous case flagged — User Story 4 is independently testable.
 
 ---
 
-## Phase 7: Polish & Cross-Cutting Concerns
+## Phase 7: User Story 5 - Retire a rule without losing its ID (Priority: P2)
+
+**Goal**: `/policy:retire` removes a rule from the live set and leaves a tombstone, so its
+ID is never reissued (FR-004, FR-016) and the retirement is recorded with a reason.
+
+**Independent Test**: Retire one rule with a reason. Confirm its file is gone from
+`.policy/rule/`, a tombstone exists at `.policy/retired/<id>.md`, and the next allocation
+returns an ID above the retired one.
+
+### Tests for User Story 5
+
+- [ ] T019 [P] [US5] Write `tests/test_retire_rule.py`: retiring an existing rule writes
+  `.policy/retired/<fmt>.md` with frontmatter `id`, `title` (copied), `retired` (ISO date),
+  `reason`, and optional `superseded_by`, then removes the rule file; a missing rule exits
+  `1` with no writes; an existing tombstone for the ID exits `1` with no writes; an empty
+  `--reason` exits `2`; the tombstone is written before the rule file is removed, so a
+  failure between the two steps leaves a duplicate rather than a gap (per
+  `contracts/retire_rule.md`).
+
+### Implementation for User Story 5
+
+- [ ] T020 [US5] Implement `skills/retire/scripts/retire_rule.py` per
+  `contracts/retire_rule.md`, using `policy_frontmatter.render` and `policy_ids.format_id`
+  (depends on T003, T004).
+- [ ] T021 [US5] Create `skills/retire/SKILL.md` (new skill, exposed as `/policy:retire`):
+  before running `retire_rule.py`, ask the person for the reason and any `superseded_by`
+  via `AskUserQuestion` (Constitution Principle III checkpoint); report the tombstone path
+  afterward. Use "rule" terminology throughout.
+
+**Checkpoint**: A retired rule's ID is never reissued, and the retirement is recorded —
+User Story 5 is independently testable.
+
+---
+
+## Phase 8: Polish & Cross-Cutting Concerns
 
 **Purpose**: Work that spans every story rather than belonging to one.
 
-- [ ] T019 [P] Replace `templates/policy-template.md` with `templates/rule-template.md`:
+- [ ] T022 [P] Replace `templates/policy-template.md` with `templates/rule-template.md`:
   a zero-padded bare-numeric-ID placeholder (e.g. `047`, no alphabetic prefix), the
   full frontmatter block, a short `#` title heading, and room for "See also" links in
   the rationale, matching data-model.md's Rule schema.
-- [ ] T020 [P] Update `skills/judge/SKILL.md` to describe the new
+- [ ] T023 [P] Update `skills/judge/SKILL.md` to describe the new
   `.policy/rule/<id>.md` convention when handing a judged-as-policy rule off to
   `/policy:add`.
-- [ ] T021 [P] Update `README.md`'s remaining "obligation" references (the Skills
+- [ ] T024 [P] Update `README.md`'s remaining "obligation" references (the Skills
   list and Conventions section) to "rule" and the `.policy/rule/<id>.md` layout.
-- [ ] T022 [P] Update `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`
+- [ ] T025 [P] Update `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`
   descriptions to drop "obligation" and the old topic-file wording.
-- [ ] T023 Run a repo-wide `grep -ri obligation` sweep (excluding
+- [ ] T026 Run a repo-wide `grep -ri obligation` sweep (excluding
   `.specify/memory/constitution.md` and this feature's own `spec.md`, both
   intentionally excluded per research.md Decision 5) and confirm zero remaining
-  matches in plugin-owned files (FR-013). Depends on T009, T012, T015, T018, T019,
-  T020, T021, T022.
-- [ ] T024 Validate the five changed skill descriptions (`add`, `sync`, `status`,
+  matches in plugin-owned files (FR-013). Depends on T009, T012, T015, T018, T022,
+  T023, T024, T025.
+- [ ] T027 Validate the five changed skill descriptions (`add`, `sync`, `status`,
   `audit`, `judge`) with fresh, context-free subagents against the Constitution's
   Plugin Constraints gate — at least one positive-trigger case per skill and one
   adjacent negative case — before considering the description changes done. Depends
-  on T009, T012, T015, T020.
-- [ ] T025 Run `quickstart.md`'s four scenarios end-to-end in a scratch directory and
+  on T009, T012, T015, T023.
+- [ ] T028 Run `quickstart.md`'s five scenarios end-to-end in a scratch directory and
   confirm every pass condition, including the cross-story one (a rule moved into an
   organizational subdirectory is still found by the updated `policy_status.py`).
   Depends on T008, T011, T014, T017.
@@ -257,10 +299,10 @@ every ambiguous case flagged — User Story 4 is independently testable.
 
 - **Setup (Phase 1)**: No dependencies.
 - **Foundational (Phase 2)**: Depends on Setup — BLOCKS every user story.
-- **User Stories (Phases 3–6)**: All depend on Foundational completion. US1, US2, and
-  US3 have no dependency on each other. US4 depends only on Foundational, not on
+- **User Stories (Phases 3–7)**: All depend on Foundational completion. US1, US2, and
+  US3 have no dependency on each other. US4 and US5 depend only on Foundational, not on
   US1–US3.
-- **Polish (Phase 7)**: T019–T022 can start anytime after Setup. T023–T025 depend on
+- **Polish (Phase 8)**: T022–T025 can start anytime after Setup. T026–T028 depend on
   the relevant story/skill tasks finishing first (see each task's explicit
   dependency line above).
 
@@ -277,8 +319,8 @@ every ambiguous case flagged — User Story 4 is independently testable.
   parallel once written against the contracts (they don't need the implementation to
   exist first, since they test against the documented contract).
 - Once Foundational is complete, US1 (T007–T009), US2 (T010–T012), US3 (T013–T015),
-  and US4 (T016–T018) can all proceed in parallel — none depends on another.
-- T019–T022 in Polish are mutually independent and parallelizable.
+  US4 (T016–T018), and US5 (T019–T021) can all proceed in parallel — none depends on another.
+- T022–T025 in Polish are mutually independent and parallelizable.
 
 ---
 
@@ -299,6 +341,7 @@ Task: "US1 — tests/test_add_rule.py + skills/add/scripts/add_rule.py + skills/
 Task: "US2 — tests/test_sync_status.py + skills/sync/scripts/sync_status.py + skills/sync/SKILL.md"
 Task: "US3 — tests/test_policy_status.py + policy_status.py update + SKILL.md updates"
 Task: "US4 — tests/test_migrate_rules.py + skills/migrate/scripts/migrate_rules.py + skills/migrate/SKILL.md"
+Task: "US5 — tests/test_retire_rule.py + skills/retire/scripts/retire_rule.py + skills/retire/SKILL.md"
 ```
 
 ---
@@ -321,12 +364,13 @@ Task: "US4 — tests/test_migrate_rules.py + skills/migrate/scripts/migrate_rule
 4. Add US3 → test independently (status shows a title and a frontmatter-sourced tier).
 5. Add US4 → test independently (an existing repo can be migrated, nothing silently
    resolved).
-6. Polish: terminology rename sweep, trigger validation, full quickstart run.
+6. Add US5 → test independently (retiring a rule never lets its ID be reissued).
+7. Polish: terminology rename sweep, trigger validation, full quickstart run.
 
 ### Parallel Team Strategy
 
-After Foundational is done, four people could take US1, US2, US3, and US4
-independently — none of the four stories touches a file another one owns.
+After Foundational is done, five people could take US1 through US5 independently —
+no story touches a file another one owns.
 
 ---
 
@@ -334,9 +378,8 @@ independently — none of the four stories touches a file another one owns.
 
 - [P] tasks touch different files and have no incomplete dependency.
 - [Story] labels map each task to its spec.md user story for traceability.
-- This plugin ships zero tests today; T005/T006/T007/T010/T013/T016 are its first.
-- `.specify/memory/constitution.md` is **not** touched by any task here — its
-  Principle II amendment is a deliberately separate follow-up (plan.md Complexity
-  Tracking).
+- This plugin ships zero tests today; T005/T006/T007/T010/T013/T016/T019 are its first.
+- `.specify/memory/constitution.md` is **not** touched by any task here. Its Principle II
+  amendment shipped separately as v2.0.0 and v2.0.1 through `/speckit-constitution`.
 - Avoid: vague tasks, two stories editing the same file, a story depending on another
   story's completion.

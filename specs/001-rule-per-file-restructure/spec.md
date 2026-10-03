@@ -134,6 +134,31 @@ than silently duplicated or discarded.
 
 ---
 
+### User Story 5 - Retire a rule without losing its ID (Priority: P2)
+
+A policy author retires a rule that no longer applies. Today there's no defined way to
+do this, and a deleted rule's ID could be reissued to a later rule. With this feature,
+retiring a rule removes it from the live set and leaves a tombstone, so its ID is never
+reissued and the retirement is recorded with a reason.
+
+**Why this priority**: Without it, FR-004 (no ID reuse) can't hold. It depends only on
+the allocation and frontmatter foundations, not on the other stories.
+
+**Independent Test**: Retire one rule with a reason. Confirm its file is gone from
+`.policy/rule/`, a tombstone exists at `.policy/retired/<id>.md`, and the next
+`/policy:add` gets an ID above the retired one.
+
+**Acceptance Scenarios**:
+
+1. **Given** rule 066 exists, **When** it is retired with a reason, **Then** its file is
+   removed and a tombstone recording that reason exists at `.policy/retired/066.md`.
+2. **Given** rule 066 was retired and was the highest ID in use, **When** a new rule is
+   added, **Then** its ID is 067 or higher, never 066.
+3. **Given** a tombstone already exists for an ID, **When** retirement is attempted for
+   that ID again, **Then** the operation refuses and changes nothing.
+
+---
+
 ### Edge Cases
 
 - What happens when two `/policy:add` runs in the same working copy race for the same
@@ -150,6 +175,9 @@ than silently duplicated or discarded.
   been run yet? They are out of scope for the updated skills, which operate only on
   `.policy/rule/`; migration is a precondition for using the updated skills, not
   something they do automatically on first encounter with old-format files.
+- What happens when a rule file is deleted with plain git rather than the retirement
+  operation? No tombstone exists, so its ID would otherwise be reissued. Status reports
+  the resulting gap as a defect (FR-017) until a tombstone is written for it.
 - What happens when two rules are added independently on separate, not-yet-merged
   branches and both happen to compute the same next ID before either branch sees the
   other's commit? This is a known, accepted residual risk (the same one Spec Kit's own
@@ -168,8 +196,9 @@ than silently duplicated or discarded.
 - **FR-003**: System MUST allocate a new rule's ID as one greater than the highest ID
   currently present in the tree, and MUST re-check for a conflict immediately before
   creating the new file, retrying with the next integer if a conflict is found.
-- **FR-004**: System MUST NOT reuse a rule ID once assigned, even after that rule's
-  file is deleted.
+- **FR-004**: System MUST NOT reuse a rule ID once assigned, even after that rule is
+  retired. Retiring a rule MUST leave a frontmatter-only tombstone at
+  `.policy/retired/<id>.md`, and tombstones MUST count toward ID allocation.
 - **FR-005**: Moving a rule's file between organizational subdirectories, or into or
   out of the flat root of `.policy/rule/`, MUST NOT change that rule's ID.
 - **FR-006**: Each rule file MUST declare, in YAML frontmatter: a human-readable
@@ -194,6 +223,13 @@ than silently duplicated or discarded.
   "rule" consistently in place of the prior term "obligation".
 - **FR-014**: A fully flat `.policy/rule/` layout, with no organizational
   subdirectories at all, MUST remain a valid and complete setup.
+- **FR-016**: System MUST provide a retirement operation that removes a rule's file from
+  `.policy/rule/` and writes its tombstone in one step, refusing to proceed if the rule
+  does not exist or a tombstone for that ID already exists.
+- **FR-017**: `/policy:status` MUST report any gap in the ID sequence (an integer below
+  the highest ID in use with neither a rule file nor a tombstone) as a defect, so a rule
+  deleted outside the retirement operation is surfaced rather than silently allowing
+  its ID to be reissued.
 - **FR-015**: A rule's filename and the bold statement line identifying it within its
   own file MUST use only a zero-padded decimal integer ID — minimum three digits
   (e.g. `047`), growing to additional digits once the value exceeds what three digits

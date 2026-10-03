@@ -21,6 +21,14 @@ inventory, classify once, cache the annotation" design) is unchanged.
    field, or a `method` outside the four enumerated values, is reported as
    `unclassified` — same fallback behavior as today, new source.
 
+4. **Defects**: a rule with no `audience` field, or an empty one, is reported with
+   `"defect": "audience missing"` rather than being classified. Any gap in the ID
+   sequence (an integer below the highest ID in use, with neither a rule file nor a
+   tombstone) is reported as a top-level `"gaps": [...]` entry (FR-017).
+5. **Scope**: files directly under `.policy/` (old-style `<topic>.md`, pre-migration) are
+   ignored, not parsed. A flat `.policy/rule/` (no subdirectories) is a fully supported
+   input.
+
 ## CLI
 
 Unchanged invocation shape: `policy-status.sh [args]` → `policy_status.py [args]`.
