@@ -24,18 +24,15 @@ Init never modifies an existing file (FR-002).
 **Output**: One line per tracked or shipped path, grouped by state, then a summary line.
 
 ```text
-updated:        .policy/README.md  (0.1.0 -> 0.2.0)
-current:        (none)
-customized:     .policy/README.md  (see diff below)
-missing:        (none)
-no-longer-shipped: (none)
-user-owned:     (none)
-
---- diff .policy/README.md (project -> shipped 0.2.0)
+updated: .policy/README.md  (0.1.0 -> 0.2.0)
+customized: .policy/old-notes.md
+--- diff .policy/old-notes.md
 ...unified diff...
 
-summary: 1 updated, 1 customized
+summary: 1 updated, 0 created, 1 customized, 0 missing
 ```
+
+Each state line is `<label>: <path>`. Labels with no entries print nothing.
 
 Diff blocks appear only for `customized` files.
 
