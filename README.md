@@ -15,6 +15,12 @@ generalized to drop riposte-specific content.
 
 ## Skills
 
+- **`/policy:init`**: bootstraps `.policy/` in a repo that doesn't have one: an empty
+  `rule/` and `retired/`, a starter `README.md`, and `manifest.json`. Never overwrites
+  an existing file.
+- **`/policy:update`**: applies newer shipped templates to files that are still unmodified.
+  Customized, missing, and no-longer-shipped files are reported and left alone. Exits
+  non-zero on drift, so CI can surface it.
 - **`/policy:add`**: adds a rule as a new file under `.policy/rule/`, with the next
   free ID. Writes only that layer and flags that derived docs are now out of sync.
 - **`/policy:sync`**: checks whether `CONTRIBUTING.md` and the agent-operational doc
@@ -54,13 +60,16 @@ generalized to drop riposte-specific content.
   MUST NOT, or MAY), and carries its own short rationale. Related rules cross-link by
   number instead of sharing rationale text.
 - **Derived docs** are outputs, never sources. Edit the rule, then sync.
+- **Manifest.** `.policy/manifest.json` records what the plugin wrote into `.policy/`: each
+  tracked file's content fingerprint and the plugin version that shipped it. Only files
+  listed there are ever updated by `/policy:update`. Don't edit it by hand.
 
 Nothing here is enforced by the plugin itself. A project adopts the convention by
 following it, the same way `.specify/` works for Spec Kit.
 
 ## Status
 
-Pre-release (`0.1.0`). The one-rule-per-file layout is implemented: the skills, scripts,
+Pre-release (`0.2.0`). The one-rule-per-file layout is implemented: the skills, scripts,
 and tests live in this repo, with the constitution (`.specify/memory/constitution.md`)
 describing the convention. Human vs. agent scoping is not yet built. Project vs. user
 scoping is not planned as plugin code: Claude Code's native `.claude/rules/` (project) and
