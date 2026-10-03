@@ -19,8 +19,8 @@ append to an existing file.
 3. **Set the required fields** and confirm them with the user before writing:
    - `audience`: `human`, `agent`, or both. This decides which derived docs the rule reaches.
    - `verification.method`: `ci-blocking`, `ci-checked`, `human-verified`, or `written-only`.
-     Name the check that enforces it, by name: a CI job, script, or review step
-     (`verification.via`). Don't describe its current state.
+     Name the check that SHOULD enforce it, as an intended name: a CI job, script, or review
+     step (`verification.via`). The check may not exist yet. Don't describe its current state.
    - `title`: a short human name. It's display-only and can change later.
 4. **Run the script** (this is the checkpoint: show the person the statement, fields, and
    rationale first, and wait for a go-ahead):

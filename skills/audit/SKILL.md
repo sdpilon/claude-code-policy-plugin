@@ -22,6 +22,8 @@ contract only.
   not be the rule's ID or title, since changing either would otherwise file duplicates. The
   project's docs must name the key it uses.
 - For each passing rule, do nothing.
+- For each `ci-checked` rule whose named check (`verification.via`) doesn't exist yet, file an
+  issue to build it. Don't skip it: the issue is how an unbuilt check gets tracked.
 - Never fail the build because a rule isn't verifiable. Log one line per rule (pass, filed,
   or skipped).
 
