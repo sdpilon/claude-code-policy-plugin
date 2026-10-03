@@ -32,17 +32,23 @@ class MigrateRulesTests(unittest.TestCase):
     def test_each_obligation_becomes_one_rule_with_fresh_id(self):
         with scratch() as d:
             policy = self.setup_repo(d)
-            result = load(run(MIGRATE, "--source-dir", str(policy), "--dest-dir", str(policy / "rule"))[1])
+            result = load(
+                run(MIGRATE, "--source-dir", str(policy), "--dest-dir", str(policy / "rule"))[1]
+            )
             self.assertEqual([m["new_id"] for m in result["migrated"]], [1, 2, 3])
             self.assertEqual(len(list((policy / "rule").glob("*.md"))), 3)
 
     def test_shared_rationale_is_flagged_not_duplicated(self):
         with scratch() as d:
             policy = self.setup_repo(d)
-            result = load(run(MIGRATE, "--source-dir", str(policy), "--dest-dir", str(policy / "rule"))[1])
+            result = load(
+                run(MIGRATE, "--source-dir", str(policy), "--dest-dir", str(policy / "rule"))[1]
+            )
             shared = [m for m in result["migrated"] if m["shared_rationale_group"]]
             self.assertEqual(len(shared), 2)
-            self.assertEqual(shared[0]["shared_rationale_group"], shared[1]["shared_rationale_group"])
+            self.assertEqual(
+                shared[0]["shared_rationale_group"], shared[1]["shared_rationale_group"]
+            )
             text = (policy / "rule" / "001.md").read_text()
             self.assertIn("TODO: see migration report", text)
             self.assertNotIn("leaked secret", text)
@@ -57,23 +63,38 @@ class MigrateRulesTests(unittest.TestCase):
     def test_every_migrated_rule_needs_audience_review(self):
         with scratch() as d:
             policy = self.setup_repo(d)
-            result = load(run(MIGRATE, "--source-dir", str(policy), "--dest-dir", str(policy / "rule"))[1])
+            result = load(
+                run(MIGRATE, "--source-dir", str(policy), "--dest-dir", str(policy / "rule"))[1]
+            )
             for n in (1, 2, 3):
                 self.assertIn({"new_id": n, "reason": "audience not set"}, result["needs_review"])
 
     def test_dry_run_writes_nothing(self):
         with scratch() as d:
             policy = self.setup_repo(d)
-            result = load(run(MIGRATE, "--source-dir", str(policy), "--dest-dir", str(policy / "rule"), "--dry-run")[1])
+            result = load(
+                run(
+                    MIGRATE,
+                    "--source-dir",
+                    str(policy),
+                    "--dest-dir",
+                    str(policy / "rule"),
+                    "--dry-run",
+                )[1]
+            )
             self.assertEqual(len(result["migrated"]), 3)
             self.assertFalse((policy / "rule").exists())
 
     def test_file_without_section_headings_adds_reason(self):
         with scratch() as d:
             policy = self.setup_repo(d, "**SEC-1**: Flat MUST hold.\n")
-            result = load(run(MIGRATE, "--source-dir", str(policy), "--dest-dir", str(policy / "rule"))[1])
+            result = load(
+                run(MIGRATE, "--source-dir", str(policy), "--dest-dir", str(policy / "rule"))[1]
+            )
             reasons = [r["reason"] for r in result["needs_review"]]
-            self.assertIn("could not determine section boundaries — check rationale manually", reasons)
+            self.assertIn(
+                "could not determine section boundaries — check rationale manually", reasons
+            )
 
 
 if __name__ == "__main__":

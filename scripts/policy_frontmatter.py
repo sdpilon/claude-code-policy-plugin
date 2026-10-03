@@ -8,7 +8,7 @@ being guessed at. See specs/001-rule-per-file-restructure/contracts/policy_front
 import json
 import re
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 KEY_ORDER = ["title", "tags", "created", "modified", "audience", "verification", "synced_hash"]
@@ -74,7 +74,11 @@ def parse(text):
             raise FrontmatterError(f"unsupported syntax: {raw!r}", line_no)
         key, value = m.group(1), m.group(2)
         if value.strip() != "":
-            fields[key] = _inline_list(value, line_no) if value.lstrip().startswith("[") else _scalar(value, line_no)
+            fields[key] = (
+                _inline_list(value, line_no)
+                if value.lstrip().startswith("[")
+                else _scalar(value, line_no)
+            )
             continue
         # Empty value: a block list or a nested mapping follows.
         if i < end and lines[i].startswith("- "):
@@ -173,7 +177,7 @@ def validate_tombstone(fields):
 
 
 def now_utc():
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def read_file(path):

@@ -12,9 +12,19 @@ import re
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(next(p for p in Path(__file__).resolve().parents if (p / "scripts" / "policy_ids.py").exists()) / "scripts"))
-import policy_frontmatter as fm  # noqa: E402
-import policy_ids as ids  # noqa: E402
+sys.path.insert(
+    0,
+    str(
+        next(
+            p
+            for p in Path(__file__).resolve().parents
+            if (p / "scripts" / "policy_ids.py").exists()
+        )
+        / "scripts"
+    ),
+)
+import policy_frontmatter as fm
+import policy_ids as ids
 
 BOLD_ID_RE = re.compile(r"^\*\*(\d+)\*\*:\s*(.+)$")
 JOB_RE = re.compile(r"^  ([A-Za-z0-9_-]+):\s*(#.*)?$")
@@ -41,8 +51,14 @@ def extract_rules(root):
         if rule_id is None:
             continue
         text = path.read_text(encoding="utf-8")
-        row = {"id": rule_id, "title": "", "statement": "", "tier": "unclassified", "via": None,
-               "path": str(path.relative_to(root))}
+        row = {
+            "id": rule_id,
+            "title": "",
+            "statement": "",
+            "tier": "unclassified",
+            "via": None,
+            "path": str(path.relative_to(root)),
+        }
         try:
             fields = fm.parse(text)
         except fm.FrontmatterError as e:
@@ -70,7 +86,9 @@ def extract_rules(root):
 
 def find_gaps(root, rule_ids):
     retired_root = root / ".policy" / "retired"
-    retired_ids = set(ids._ids_in(retired_root, recursive=False)) if retired_root.is_dir() else set()
+    retired_ids = (
+        set(ids._ids_in(retired_root, recursive=False)) if retired_root.is_dir() else set()
+    )
     present = set(rule_ids) | retired_ids
     if not present:
         return []
@@ -96,8 +114,13 @@ def introspect_ci(root):
                 continue
             jm = JOB_RE_ALL.match(line)
             if jm:
-                current = {"workflow": wf.name, "job": jm.group(1), "blocking": True,
-                           "condition": None, "steps": []}
+                current = {
+                    "workflow": wf.name,
+                    "job": jm.group(1),
+                    "blocking": True,
+                    "condition": None,
+                    "steps": [],
+                }
                 jobs.append(current)
                 continue
             if current is None:

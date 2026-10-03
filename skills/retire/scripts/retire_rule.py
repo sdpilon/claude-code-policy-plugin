@@ -10,9 +10,19 @@ import json
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(next(p for p in Path(__file__).resolve().parents if (p / "scripts" / "policy_ids.py").exists()) / "scripts"))
-import policy_frontmatter as fm  # noqa: E402
-import policy_ids as ids  # noqa: E402
+sys.path.insert(
+    0,
+    str(
+        next(
+            p
+            for p in Path(__file__).resolve().parents
+            if (p / "scripts" / "policy_ids.py").exists()
+        )
+        / "scripts"
+    ),
+)
+import policy_frontmatter as fm
+import policy_ids as ids
 
 
 def fail(message, code):
@@ -35,7 +45,11 @@ def main(argv):
     rule_dir, retired_dir = Path(args.rule_dir), Path(args.retired_dir)
     tombstone = retired_dir / f"{ids.format_id(args.id)}.md"
 
-    matches = [path for path in rule_dir.rglob("*.md") if ids.parse_id(path.stem) == args.id] if rule_dir.is_dir() else []
+    matches = (
+        [path for path in rule_dir.rglob("*.md") if ids.parse_id(path.stem) == args.id]
+        if rule_dir.is_dir()
+        else []
+    )
     if not matches:
         return fail(f"no rule file for ID {ids.format_id(args.id)}", 1)
     rule_file = matches[0]
@@ -44,7 +58,11 @@ def main(argv):
 
     if args.superseded_by is not None:
         replacement = ids.format_id(args.superseded_by)
-        found = any(ids.parse_id(p.stem) == args.superseded_by for p in rule_dir.rglob("*.md")) if rule_dir.is_dir() else False
+        found = (
+            any(ids.parse_id(p.stem) == args.superseded_by for p in rule_dir.rglob("*.md"))
+            if rule_dir.is_dir()
+            else False
+        )
         found = found or (retired_dir / f"{replacement}.md").exists()
         if not found:
             return fail(f"--superseded-by {replacement} names no rule or tombstone", 2)

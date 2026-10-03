@@ -6,7 +6,7 @@ from tests._cli import REPO, load, run, scratch
 
 SYNC = "skills/sync/scripts/sync_status.py"
 sys.path.insert(0, str(REPO / "skills" / "sync" / "scripts"))
-import sync_status  # noqa: E402
+import sync_status
 
 RULE = """---
 title: "{title}"
@@ -25,7 +25,9 @@ verification:
 def write(d, rule_id, audience, synced=""):
     path = Path(d) / "rule" / f"{rule_id:03d}.md"
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(RULE.format(title=f"t{rule_id}", audience=audience, id=f"{rule_id:03d}", synced=synced))
+    path.write_text(
+        RULE.format(title=f"t{rule_id}", audience=audience, id=f"{rule_id:03d}", synced=synced)
+    )
     return path
 
 
@@ -45,15 +47,20 @@ class SyncStatusTests(unittest.TestCase):
             rows = {r["id"]: r for r in load(run(SYNC, "--dir", str(Path(d) / "rule"))[1])}
             self.assertEqual(rows[1]["targets"], ["CONTRIBUTING.md"])
             self.assertEqual(rows[2]["targets"], ["CLAUDE.md", ".claude/rules/002.md"])
-            self.assertEqual(rows[3]["targets"], ["CONTRIBUTING.md", "CLAUDE.md", ".claude/rules/003.md"])
+            self.assertEqual(
+                rows[3]["targets"], ["CONTRIBUTING.md", "CLAUDE.md", ".claude/rules/003.md"]
+            )
 
     def test_unchanged_after_synced_hash_is_written(self):
         """Writing synced_hash must not itself make the rule look changed (the self-reference bug)."""
         with scratch() as d:
             path = write(d, 1, "agent")
             digest = sync_status.content_hash(path.read_text())
-            path.write_text(RULE.format(title="t1", audience="agent", id="001",
-                                        synced=f"synced_hash: {digest}\n"))
+            path.write_text(
+                RULE.format(
+                    title="t1", audience="agent", id="001", synced=f"synced_hash: {digest}\n"
+                )
+            )
             row = load(run(SYNC, "--dir", str(Path(d) / "rule"))[1])[0]
             self.assertFalse(row["changed"])
 
@@ -61,8 +68,11 @@ class SyncStatusTests(unittest.TestCase):
         with scratch() as d:
             path = write(d, 1, "agent")
             digest = sync_status.content_hash(path.read_text())
-            path.write_text(RULE.format(title="edited", audience="agent", id="001",
-                                        synced=f"synced_hash: {digest}\n"))
+            path.write_text(
+                RULE.format(
+                    title="edited", audience="agent", id="001", synced=f"synced_hash: {digest}\n"
+                )
+            )
             row = load(run(SYNC, "--dir", str(Path(d) / "rule"))[1])[0]
             self.assertTrue(row["changed"])
 

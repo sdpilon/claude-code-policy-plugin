@@ -26,8 +26,18 @@ class RetireRuleTests(unittest.TestCase):
         return policy
 
     def retire(self, policy, *extra):
-        return run(RETIRE, "--id", "2", "--reason", "covered by branch protection",
-                   "--rule-dir", str(policy / "rule"), "--retired-dir", str(policy / "retired"), *extra)
+        return run(
+            RETIRE,
+            "--id",
+            "2",
+            "--reason",
+            "covered by branch protection",
+            "--rule-dir",
+            str(policy / "rule"),
+            "--retired-dir",
+            str(policy / "retired"),
+            *extra,
+        )
 
     def test_writes_tombstone_then_removes_rule(self):
         with scratch() as d:
@@ -42,8 +52,17 @@ class RetireRuleTests(unittest.TestCase):
     def test_missing_rule_exits_1_and_writes_nothing(self):
         with scratch() as d:
             policy = self.setup_repo(d)
-            code, _, _ = run(RETIRE, "--id", "9", "--reason", "x",
-                             "--rule-dir", str(policy / "rule"), "--retired-dir", str(policy / "retired"))
+            code, _, _ = run(
+                RETIRE,
+                "--id",
+                "9",
+                "--reason",
+                "x",
+                "--rule-dir",
+                str(policy / "rule"),
+                "--retired-dir",
+                str(policy / "retired"),
+            )
             self.assertEqual(code, 1)
             self.assertFalse((policy / "retired").exists())
 
@@ -51,7 +70,9 @@ class RetireRuleTests(unittest.TestCase):
         with scratch() as d:
             policy = self.setup_repo(d)
             (policy / "retired").mkdir()
-            (policy / "retired" / "002.md").write_text("---\ntitle: x\nretired: 2026-10-02\nreason: y\n---\n")
+            (policy / "retired" / "002.md").write_text(
+                "---\ntitle: x\nretired: 2026-10-02\nreason: y\n---\n"
+            )
             code, _, _ = self.retire(policy)
             self.assertEqual(code, 1)
             self.assertTrue((policy / "rule" / "ci" / "002.md").exists())
@@ -59,8 +80,17 @@ class RetireRuleTests(unittest.TestCase):
     def test_empty_reason_exits_2(self):
         with scratch() as d:
             policy = self.setup_repo(d)
-            code, _, _ = run(RETIRE, "--id", "2", "--reason", "  ",
-                             "--rule-dir", str(policy / "rule"), "--retired-dir", str(policy / "retired"))
+            code, _, _ = run(
+                RETIRE,
+                "--id",
+                "2",
+                "--reason",
+                "  ",
+                "--rule-dir",
+                str(policy / "rule"),
+                "--retired-dir",
+                str(policy / "retired"),
+            )
             self.assertEqual(code, 2)
 
     def test_retired_id_is_not_reissued(self):
@@ -68,9 +98,20 @@ class RetireRuleTests(unittest.TestCase):
             policy = self.setup_repo(d)
             self.retire(policy)
             from tests._cli import load
-            code, out, _ = run("skills/add/scripts/add_rule.py", "--statement", "Tags MUST exist.",
-                               "--title", "Tags", "--audience", "human", "--verification-method", "written-only",
-                               "--policy-dir", str(policy))
+
+            code, out, _ = run(
+                "skills/add/scripts/add_rule.py",
+                "--statement",
+                "Tags MUST exist.",
+                "--title",
+                "Tags",
+                "--audience",
+                "human",
+                "--verification-method",
+                "written-only",
+                "--policy-dir",
+                str(policy),
+            )
             self.assertEqual(code, 0)
             self.assertEqual(load(out)["id"], 3)
 

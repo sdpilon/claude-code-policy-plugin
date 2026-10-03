@@ -10,9 +10,11 @@ See specs/002-policy-init-update/contracts/commands.md.
 import sys
 from pathlib import Path
 
-PLUGIN_ROOT = next(p for p in Path(__file__).resolve().parents if (p / "scripts" / "policy_manifest.py").exists())
+PLUGIN_ROOT = next(
+    p for p in Path(__file__).resolve().parents if (p / "scripts" / "policy_manifest.py").exists()
+)
 sys.path.insert(0, str(PLUGIN_ROOT / "scripts"))
-import policy_manifest as pm  # noqa: E402
+import policy_manifest as pm
 
 SHIPPED = {".policy/README.md": PLUGIN_ROOT / "templates" / "policy-readme.md"}
 
@@ -82,7 +84,11 @@ def main():
     if changed or manifest["plugin_version"] != shipped_version:
         pm.write_manifest(
             manifest_path,
-            {"format_version": pm.FORMAT_VERSION, "plugin_version": shipped_version, "files": files},
+            {
+                "format_version": pm.FORMAT_VERSION,
+                "plugin_version": shipped_version,
+                "files": files,
+            },
         )
 
     print(

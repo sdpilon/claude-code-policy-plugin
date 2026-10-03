@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
-import policy_ids as ids  # noqa: E402
+import policy_ids as ids
 
 
 class FormatParseTests(unittest.TestCase):

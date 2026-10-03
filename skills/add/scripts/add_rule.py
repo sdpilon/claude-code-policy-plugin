@@ -6,9 +6,19 @@ import json
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(next(p for p in Path(__file__).resolve().parents if (p / "scripts" / "policy_ids.py").exists()) / "scripts"))
-import policy_frontmatter as fm  # noqa: E402
-import policy_ids as ids  # noqa: E402
+sys.path.insert(
+    0,
+    str(
+        next(
+            p
+            for p in Path(__file__).resolve().parents
+            if (p / "scripts" / "policy_ids.py").exists()
+        )
+        / "scripts"
+    ),
+)
+import policy_frontmatter as fm
+import policy_ids as ids
 
 METHODS = sorted(fm.METHODS)
 

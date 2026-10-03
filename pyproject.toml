@@ -1,0 +1,15 @@
+[project]
+name = "policy"
+version = "0.1.0"
+requires-python = ">=3.14"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "ruff>=0.16.10",
+]
+
+[tool.ruff]
+# Spec Kit, Superpowers, and Claude Code own these trees; they aren't ours to lint or format.
+extend-exclude = [".specify", ".superpowers", ".claude", ".claude-plugin"]
+line-length = 100
