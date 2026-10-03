@@ -64,7 +64,7 @@ if the verdict itself turns out right.
 ## Placing the verdict
 
 **Judged as policy** → hand off to the add skill to actually create/extend the
-relevant `.policy/<topic>.md`, `CONTRIBUTING.md`, and agent-operational-doc
+relevant `.policy/rule/<id>.md`, `CONTRIBUTING.md`, and agent-operational-doc
 sections. Don't duplicate that process here.
 
 **Judged as not policy** → it splits further, by durability and relevance:
