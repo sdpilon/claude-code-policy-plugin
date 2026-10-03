@@ -59,11 +59,11 @@ following it, the same way `.specify/` works for Spec Kit.
 
 ## Status
 
-Pre-release (`0.1.0`). The one-rule-per-file layout is specified and planned but not
-yet implemented in the skills and scripts. The constitution (`.specify/memory/constitution.md`)
-describes the target convention. Project vs. user scoping is not planned as plugin
-code: Claude Code's native `.claude/rules/` (project) and `~/.claude/rules/` (user)
-already provide it. Deferred phases are tracked in `ROADMAP.yaml`.
+Pre-release (`0.1.0`). The one-rule-per-file layout is implemented: the skills, scripts,
+and tests live in this repo, with the constitution (`.specify/memory/constitution.md`)
+describing the convention. Human vs. agent scoping is not yet built. Project vs. user
+scoping is not planned as plugin code: Claude Code's native `.claude/rules/` (project) and
+`~/.claude/rules/` (user) already provide it. Deferred phases are tracked in `ROADMAP.yaml`.
 
 ## Installing into a project
 
