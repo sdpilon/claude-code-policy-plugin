@@ -3,9 +3,9 @@
 Claude Code plugin for a repo's committed process-policy layer: a
 `.policy/<topic>.md` source of truth, with two derived forms (a human-facing
 narrative doc, usually `CONTRIBUTING.md`, and an agent-operational doc, usually
-`CLAUDE.md`), plus the judgment calls around adding to it, keeping the derived
-docs in sync, auditing what's self-checkable, and reporting on what's actually
-enforced.
+`CLAUDE.md` or `.claude/rules/<topic>.md`), plus the judgment calls around adding
+to it, keeping the derived docs in sync, auditing what's self-checkable, and
+reporting on what's actually enforced.
 
 This plugin ships the **mechanism** — skills that operate on any repo following
 this convention. It never ships a project's actual obligations, its actual CI
@@ -38,8 +38,8 @@ in-repo `.claude/skills/policy-*`, generalized to drop riposte-specific content.
   NOT/MAY <requirement>` — one sentence, one modal verb, IDs never renumbered or
   reused.
 - Optionally, a human-facing `CONTRIBUTING.md` and an agent-operational doc
-  (`CLAUDE.md` or equivalent) that each link to the `.policy/<topic>.md` files
-  they derive from.
+  (`CLAUDE.md`, Claude Code's native `.claude/rules/<topic>.md`, or equivalent)
+  that each link to the `.policy/<topic>.md` files they derive from.
 - Optionally, a product-principles doc (e.g. a Spec Kit `constitution.md`) that
   `/policy:add` checks before writing something that might belong there instead.
 
@@ -48,14 +48,12 @@ by following it, the same way `.specify/` works for Spec Kit.
 
 ## Status
 
-v0.1.0 — first extraction pass. Not yet built: the hash-manifest / safe-update
-mechanism for tracking which shipped files a consuming project has customized
-(see Spec Kit's `.specify/integrations/*.manifest.json` for the model), and a
-layered override/extension mechanism for scoping obligations (project vs. user vs.
-global; human vs. agent). Both are deliberate next phases, not oversights.
+v0.1.0 — first extraction pass. Project vs. user scoping is not planned as
+plugin code: Claude Code's native `.claude/rules/` (project) and
+`~/.claude/rules/` (user) already provide it. Human vs. agent scoping is not yet
+built. Other deferred phases are tracked in `ROADMAP.yaml`, not narrated here.
 
 ## Installing into a project
 
 Register this repo as a local marketplace and install at project scope — see
-Claude Code's plugin docs. This repo's own `~/Projects/_Claude/Plugins/projects`
-sibling is the template this was modeled on.
+Claude Code's plugin docs.
