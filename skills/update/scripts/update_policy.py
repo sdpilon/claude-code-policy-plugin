@@ -46,7 +46,11 @@ def write_bytes_atomic(data, dest):
 def main():
     repo = Path.cwd()
     manifest_path = repo / ".policy" / "manifest.json"
-    manifest = pm.load_manifest(manifest_path)
+    try:
+        manifest = pm.load_manifest(manifest_path)
+    except pm.ManifestError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
     files = dict(manifest["files"])
     shipped_version = pm.plugin_version()
 

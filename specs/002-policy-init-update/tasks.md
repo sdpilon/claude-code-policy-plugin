@@ -115,13 +115,13 @@
 
 ### Tests for User Story 3
 
-- [ ] T024 [US3] Write failing tests in `tests/test_update_policy.py`: with the manifest deleted, update exits `2`, prints a message naming `/policy:init`, and every file's hash is unchanged.
-- [ ] T025 [US3] Add a failing test in `tests/test_update_policy.py`: with the manifest set to `{ not json`, update exits `2`, names the manifest path, and changes nothing.
-- [ ] T026 [US3] Add a failing test in `tests/test_update_policy.py`: with the manifest set to `{"format_version": 99, "plugin_version": "9.9.9", "files": {}}`, update exits `2` with a "newer plugin" message and changes nothing.
+- [X] T024 [US3] Write failing tests in `tests/test_update_policy.py`: with the manifest deleted, update exits `2`, prints a message naming `/policy:init`, and every file's hash is unchanged.
+- [X] T025 [US3] Add a failing test in `tests/test_update_policy.py`: with the manifest set to `{ not json`, update exits `2`, names the manifest path, and changes nothing.
+- [X] T026 [US3] Add a failing test in `tests/test_update_policy.py`: with the manifest set to `{"format_version": 99, "plugin_version": "9.9.9", "files": {}}`, update exits `2` with a "newer plugin" message and changes nothing.
 
 ### Implementation for User Story 3
 
-- [ ] T027 [US3] Add the fail-closed path in `skills/update/scripts/update_policy.py`: catch `ManifestError` around the manifest load, print its message to stderr, and exit `2` before any classification or write. Make T024 through T026 pass.
+- [X] T027 [US3] Add the fail-closed path in `skills/update/scripts/update_policy.py`: catch `ManifestError` around the manifest load, print its message to stderr, and exit `2` before any classification or write. Make T024 through T026 pass.
 
 **Checkpoint**: All three stories pass independently. Run `python3 -m unittest discover -s tests`.
 
