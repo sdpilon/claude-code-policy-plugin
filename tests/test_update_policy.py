@@ -180,5 +180,19 @@ class FailClosedTests(UpdateTestCase):
         self.assertEqual(tree_hashes(self.repo), before)
 
 
+class PermissionTests(UpdateTestCase):
+    def test_stale_update_preserves_file_permission_bits(self):
+        old = b"old shipped text\n"
+        (self.repo / README).write_bytes(old)
+        (self.repo / README).chmod(0o644)
+        data = self.manifest()
+        data["files"][README] = {"shipped_version": "0.1.0", "sha256": hashlib.sha256(old).hexdigest()}
+        self.save(data)
+
+        result = run(UPDATE, self.repo)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(self.readme().stat().st_mode & 0o777, 0o644)
+
+
 if __name__ == "__main__":
     unittest.main()
