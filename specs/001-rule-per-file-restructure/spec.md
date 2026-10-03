@@ -40,8 +40,8 @@ neither addition modifies a file the other created.
 **Acceptance Scenarios**:
 
 1. **Given** an empty `.policy/rule/` tree, **When** a rule is added, **Then** a new
-   file is created whose name is a bare integer ID and whose content includes that
-   same ID in a bold statement line.
+   file is created whose name is a zero-padded integer ID (minimum three digits, e.g.
+   `001`) and whose content includes that same ID in a bold statement line.
 2. **Given** a `.policy/rule/` tree with existing rules, **When** another rule is
    added, **Then** the new rule's ID is higher than every existing ID and no existing
    file is modified.
@@ -82,7 +82,7 @@ agent-operational one.
 
 ### User Story 3 - See what a rule is without opening a numbered file (Priority: P3)
 
-A policy author or reviewer runs `/policy:status`. A bare numeric filename (`47.md`)
+A policy author or reviewer runs `/policy:status`. A bare numeric filename (`047.md`)
 tells them nothing on its own. With this feature, each rule carries a short
 human-readable title, and status output shows it next to the ID.
 
@@ -194,8 +194,11 @@ than silently duplicated or discarded.
   "rule" consistently in place of the prior term "obligation".
 - **FR-014**: A fully flat `.policy/rule/` layout, with no organizational
   subdirectories at all, MUST remain a valid and complete setup.
-- **FR-015**: The bold statement line identifying a rule within its own file MUST
-  contain only the rule's numeric ID (e.g. `**47**:`), with no category prefix.
+- **FR-015**: A rule's filename and the bold statement line identifying it within its
+  own file MUST use only a zero-padded decimal integer ID — minimum three digits
+  (e.g. `047`), growing to additional digits once the value exceeds what three digits
+  hold — never an alphabetic category prefix (e.g. `**047**:`, not `**SEC-7**:` or
+  `**P047**:`).
 
 ### Key Entities
 
