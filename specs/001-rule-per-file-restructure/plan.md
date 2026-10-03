@@ -104,6 +104,10 @@ skills/
 │   └── SKILL.md                      # updated: recursive scan, verification field
 ├── judge/
 │   └── SKILL.md                      # updated: describes the new convention on hand-off
+├── retire/                           # NEW skill (H1 tombstones)
+│   ├── SKILL.md
+│   └── scripts/
+│       └── retire_rule.py            # writes .policy/retired/<id>.md, removes the rule file
 ├── migrate/                          # NEW skill
 │   ├── SKILL.md
 │   └── scripts/

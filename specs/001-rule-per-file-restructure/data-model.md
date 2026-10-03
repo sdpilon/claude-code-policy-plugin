@@ -40,8 +40,27 @@ integer everywhere else — padding is a filename/display concern only, applied 
   root, must not change `id`, `title`, or any other field (FR-005).
 
 **Lifecycle**: created by `/policy:add` or `/policy:migrate` → edited in place for
-wording/metadata changes → never deleted-and-reused by ID; a retired rule's file is
-simply removed, and its ID is never reissued (FR-004).
+wording/metadata changes → retired via the retirement operation (FR-016), which removes
+the rule file and writes its tombstone. Its ID is never reissued (FR-004). A rule removed
+any other way leaves an ID gap that `/policy:status` reports (FR-017).
+
+## Tombstone
+
+A retired rule's permanent marker. Frontmatter only, no statement or rationale body.
+Git history keeps the full retired content.
+
+**Location**: `.policy/retired/<id>.md`. A sibling of `.policy/rule/`, so status, sync,
+and audit never treat a tombstone as a live rule. ID allocation scans both directories.
+
+| Field | Location | Type | Required | Notes |
+|---|---|---|---|---|
+| `id` | derived from filename | integer | yes | The retired rule's ID. Same formatting as rule filenames. |
+| `title` | frontmatter | string | yes | Copied from the rule at retirement, for readable listings. |
+| `retired` | frontmatter | ISO 8601 date | yes | When the rule was retired. |
+| `reason` | frontmatter | string | yes | Why it was retired. Required, so the decision is never silent. |
+| `superseded_by` | frontmatter | integer | no | ID of the rule that replaces it, if any. |
+
+**Validation rules**: `id` must match the filename. Only one tombstone per ID may exist.
 
 ## Derived Document
 
