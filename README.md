@@ -28,7 +28,8 @@ generalized to drop riposte-specific content.
   consuming project, since it encodes that project's specific checks.
 - **`/policy:status`**: reports every rule's title and enforcement tier. The tier comes
   from the rule's `verification` frontmatter. Backed by
-  `skills/status/scripts/policy_status.py`, a deterministic script, so repeat runs
+  `skills/status/scripts/policy_status.py` (called directly, or through its
+  `policy-status.sh` wrapper), a deterministic script, so repeat runs
   don't need an LLM to re-read every file.
 - **`/policy:migrate`**: one-time conversion of a repo's old `.policy/<topic>.md` files
   into the one-rule-per-file layout. It flags anything needing a human decision, such
