@@ -133,7 +133,7 @@
 - [X] T029 [P] Change `version` from `0.1.0` to `0.2.0` in `.claude-plugin/plugin.json`, and the matching plugin version in `.claude-plugin/marketplace.json`.
 - [X] T030 [P] Update `README.md`: add `/policy:init` and `/policy:update` to the Skills list; add a short "Manifest" bullet under Conventions describing `.policy/manifest.json`; update the Status line to `0.2.0`. Describe the current state only, with no changelog wording (Constitution, Development Workflow).
 - [X] T031 Run the full suite with `python3 -m unittest discover -s tests` and confirm it passes.
-- [ ] T032 Validate `init` and `update` skill descriptions with fresh, context-free subagents, following the Constitution's trigger-test gate: for each skill, at least one positive request (for example "set up policy in this repo" for init; "update the policy templates" for update) and one adjacent negative request (for example "add a rule" for init; "run the audit" for update). Subagents report only whether they invoked the skill, and which one.
+- [X] T032 Validate `init` and `update` skill descriptions with fresh, context-free subagents, following the Constitution's trigger-test gate: for each skill, at least one positive request (for example "set up policy in this repo" for init; "update the policy templates" for update) and one adjacent negative request (for example "add a rule" for init; "run the audit" for update). Subagents report only whether they invoked the skill, and which one.
 - [X] T033 Run quickstart S1 through S11 end-to-end in a scratch directory (`mktemp -d`), never in a real project, and record each result.
 
 ---
