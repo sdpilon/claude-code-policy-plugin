@@ -64,16 +64,16 @@
 
 ### Tests for User Story 1
 
-- [ ] T011 [US1] Write failing tests in `tests/test_init_policy.py`: in a fresh temp dir, `init_policy.py` creates `.policy/rule/`, `.policy/retired/`, `.policy/README.md`, and `.policy/manifest.json`, exits `0`, and the manifest has `format_version` `1`, `plugin_version` equal to `plugin_version()`, and a `.policy/README.md` entry whose `sha256` equals `fingerprint` of the written file.
-- [ ] T012 [US1] Add a failing test in `tests/test_init_policy.py`: after init, running `skills/add/scripts/add_rule.py` with a valid statement creates a rule with ID `001` under `.policy/rule/`.
-- [ ] T013 [US1] Add a failing test in `tests/test_init_policy.py`: running init a second time on an initialized project prints `already initialized`, exits `0`, and leaves every byte under `.policy/` unchanged (compare hashes before and after).
-- [ ] T014 [US1] Add a failing test in `tests/test_init_policy.py`: when `.policy/README.md` already exists and no manifest exists, init prints `user-owned: .policy/README.md (not tracked)`, leaves the README bytes unchanged, and writes a manifest with no entry for it.
+- [X] T011 [US1] Write failing tests in `tests/test_init_policy.py`: in a fresh temp dir, `init_policy.py` creates `.policy/rule/`, `.policy/retired/`, `.policy/README.md`, and `.policy/manifest.json`, exits `0`, and the manifest has `format_version` `1`, `plugin_version` equal to `plugin_version()`, and a `.policy/README.md` entry whose `sha256` equals `fingerprint` of the written file.
+- [X] T012 [US1] Add a failing test in `tests/test_init_policy.py`: after init, running `skills/add/scripts/add_rule.py` with a valid statement creates a rule with ID `001` under `.policy/rule/`.
+- [X] T013 [US1] Add a failing test in `tests/test_init_policy.py`: running init a second time on an initialized project prints `already initialized`, exits `0`, and leaves every byte under `.policy/` unchanged (compare hashes before and after).
+- [X] T014 [US1] Add a failing test in `tests/test_init_policy.py`: when `.policy/README.md` already exists and no manifest exists, init prints `user-owned: .policy/README.md (not tracked)`, leaves the README bytes unchanged, and writes a manifest with no entry for it.
 
 ### Implementation for User Story 1
 
-- [ ] T015 [P] [US1] Create `templates/policy-readme.md`: a short, generic description of the `.policy/` convention (rule files, IDs, tombstones, derived docs). It must contain no project-specific content (Constitution I). Tests in T011 depend on it.
-- [ ] T016 [US1] Implement `skills/init/scripts/init_policy.py`: resolve the repo root as the current directory, create the directories, write the README from `templates/policy-readme.md` only when no file exists at that path, write the manifest with `format_version` `1`, and print one line per action. Make T011, T012, T013, and T014 pass.
-- [ ] T017 [P] [US1] Create `skills/init/SKILL.md` with frontmatter `name: init` and a description that triggers on requests to set up or bootstrap policy in a repo, and not on adding a rule. The body runs `python3 <plugin>/skills/init/scripts/init_policy.py` as described in `README.md`'s "Paths in skills" section.
+- [X] T015 [P] [US1] Create `templates/policy-readme.md`: a short, generic description of the `.policy/` convention (rule files, IDs, tombstones, derived docs). It must contain no project-specific content (Constitution I). Tests in T011 depend on it.
+- [X] T016 [US1] Implement `skills/init/scripts/init_policy.py`: resolve the repo root as the current directory, create the directories, write the README from `templates/policy-readme.md` only when no file exists at that path, write the manifest with `format_version` `1`, and print one line per action. Make T011, T012, T013, and T014 pass.
+- [X] T017 [P] [US1] Create `skills/init/SKILL.md` with frontmatter `name: init` and a description that triggers on requests to set up or bootstrap policy in a repo, and not on adding a rule. The body runs `python3 <plugin>/skills/init/scripts/init_policy.py` as described in `README.md`'s "Paths in skills" section.
 
 **Checkpoint**: US1 is independently testable. Stop here and run quickstart S1 and S2 by hand.
 
