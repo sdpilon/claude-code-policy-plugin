@@ -6,7 +6,7 @@ modified: <YYYY-MM-DDTHH:MM:SSZ>
 audience: [human, agent]
 verification:
   method: <ci-blocking|ci-checked|human-verified|written-only>
-  via: "<how it is actually enforced>"
+  via: "<the check that SHOULD enforce this rule, as an intended name: CI job, script, or review step; may not exist yet>"
 ---
 
 # <short human title>

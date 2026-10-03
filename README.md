@@ -34,7 +34,8 @@ generalized to drop riposte-specific content.
   consuming project, since it encodes that project's specific checks.
 - **`/policy:status`**: reports every rule's title and enforcement tier. The tier comes
   from the rule's `verification` frontmatter. Backed by
-  `skills/status/scripts/policy-status.sh`, a deterministic script, so repeat runs
+  `skills/status/scripts/policy_status.py` (called directly, or through its
+  `policy-status.sh` wrapper), a deterministic script, so repeat runs
   don't need an LLM to re-read every file.
 - **`/policy:migrate`**: one-time conversion of a repo's old `.policy/<topic>.md` files
   into the one-rule-per-file layout. It flags anything needing a human decision, such
@@ -73,6 +74,13 @@ and tests live in this repo, with the constitution (`.specify/memory/constitutio
 describing the convention. Human vs. agent scoping is not yet built. Project vs. user
 scoping is not planned as plugin code: Claude Code's native `.claude/rules/` (project) and
 `~/.claude/rules/` (user) already provide it. Deferred phases are tracked in `ROADMAP.yaml`.
+
+## Paths in skills
+
+Skills refer to scripts as `<plugin>/skills/<skill>/scripts/...`. `<plugin>` is the
+plugin's root directory: the folder that contains `skills/` and `scripts/`. When a skill
+loads, the harness reports its base directory, which is `<plugin>/skills/<skill>`, so the
+plugin root is two levels up from it.
 
 ## Installing into a project
 
