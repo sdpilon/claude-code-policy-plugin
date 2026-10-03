@@ -281,11 +281,11 @@ User Story 5 is independently testable.
   intentionally excluded per research.md Decision 5) and confirm zero remaining
   matches in plugin-owned files (FR-013). Depends on T009, T012, T015, T018, T022,
   T023, T024, T025.
-- [ ] T027 Validate the five changed skill descriptions (`add`, `sync`, `status`,
-  `audit`, `judge`) with fresh, context-free subagents against the Constitution's
-  Plugin Constraints gate — at least one positive-trigger case per skill and one
-  adjacent negative case — before considering the description changes done. Depends
-  on T009, T012, T015, T023.
+- [ ] T027 Validate the seven changed or new skill descriptions (`add`, `sync`, `status`,
+  `audit`, `judge`, `migrate`, `retire`) with fresh, context-free subagents against the
+  Constitution's Plugin Constraints gate — at least one positive-trigger case per skill
+  and one adjacent negative case — before considering the description changes done.
+  Depends on T009, T012, T015, T018, T021, T023.
 - [ ] T028 Run `quickstart.md`'s five scenarios end-to-end in a scratch directory and
   confirm every pass condition, including the cross-story one (a rule moved into an
   organizational subdirectory is still found by the updated `policy_status.py`).
