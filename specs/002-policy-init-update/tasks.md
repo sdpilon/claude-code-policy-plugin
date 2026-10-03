@@ -87,21 +87,21 @@
 
 ### Tests for User Story 2
 
-- [ ] T018 [US2] Write failing tests in `tests/test_update_policy.py` covering the update table, one test per row, each starting from an init'd temp project:
+- [X] T018 [US2] Write failing tests in `tests/test_update_policy.py` covering the update table, one test per row, each starting from an init'd temp project:
   - row 1 (stale): manifest `sha256` set to the current file hash and `shipped_version` set to `0.1.0`; expect `updated: .policy/README.md`, the file equal to the template, the manifest at the current `plugin_version`, exit `0`.
   - row 2 (customized): append a line to the README; expect `customized: .policy/README.md`, a unified diff in output, the file byte-identical to before, exit `1`.
   - row 3 (missing): delete the README; expect `missing: .policy/README.md`, the file still absent, exit `1`.
   - row 4 (no-longer-shipped): add a manifest entry for `.policy/old-file.md` with a valid `sha256` and create the file; expect `no-longer-shipped: .policy/old-file.md`, the file kept, exit `0`.
   - row 5 (new, absent): remove the README and its manifest entry; expect the file created and an entry added, exit `0`.
   - row 5 (new, present): remove the README's manifest entry but keep the file with edited content; expect `user-owned: .policy/README.md`, the file unchanged, exit `0`.
-- [ ] T019 [US2] Add a failing test in `tests/test_update_policy.py` for SC-004: convert the init'd README to CRLF with otherwise identical content; expect `current` for the README, not `customized`, exit `0`.
-- [ ] T020 [US2] Add a failing test in `tests/test_update_policy.py`: two consecutive updates with no plugin change produce no writes on the second run (compare hashes) and no `updated` lines.
-- [ ] T021 [US2] Add a failing test in `tests/test_update_policy.py` that a run where a customized file exists prints a summary line `summary: ... customized` and returns exit `1`.
+- [X] T019 [US2] Add a failing test in `tests/test_update_policy.py` for SC-004: convert the init'd README to CRLF with otherwise identical content; expect `current` for the README, not `customized`, exit `0`.
+- [X] T020 [US2] Add a failing test in `tests/test_update_policy.py`: two consecutive updates with no plugin change produce no writes on the second run (compare hashes) and no `updated` lines.
+- [X] T021 [US2] Add a failing test in `tests/test_update_policy.py` that a run where a customized file exists prints a summary line `summary: ... customized` and returns exit `1`.
 
 ### Implementation for User Story 2
 
-- [ ] T022 [US2] Implement `skills/update/scripts/update_policy.py`: load the manifest via `load_manifest`, classify every tracked entry and every shipped template with `classify`, apply only `stale` and `new`-absent actions using `write_manifest` for the manifest and atomic writes for files, print the grouped report from `contracts/commands.md`, print diffs for `customized` files via `unified_diff`, print the summary line, and exit with `0`, `1`, or `2` per `research.md` §5. Make T018 through T021 pass.
-- [ ] T023 [P] [US2] Create `skills/update/SKILL.md` with frontmatter `name: update` and a description that triggers on requests to update or sync shipped policy templates, and not on adding rules or running the audit. The body invokes `python3 <plugin>/skills/update/scripts/update_policy.py` and explains the report states.
+- [X] T022 [US2] Implement `skills/update/scripts/update_policy.py`: load the manifest via `load_manifest`, classify every tracked entry and every shipped template with `classify`, apply only `stale` and `new`-absent actions using `write_manifest` for the manifest and atomic writes for files, print the grouped report from `contracts/commands.md`, print diffs for `customized` files via `unified_diff`, print the summary line, and exit with `0`, `1`, or `2` per `research.md` §5. Make T018 through T021 pass.
+- [X] T023 [P] [US2] Create `skills/update/SKILL.md` with frontmatter `name: update` and a description that triggers on requests to update or sync shipped policy templates, and not on adding rules or running the audit. The body invokes `python3 <plugin>/skills/update/scripts/update_policy.py` and explains the report states.
 
 **Checkpoint**: US2 is independently testable. Run quickstart S4 through S9 by hand.
 
