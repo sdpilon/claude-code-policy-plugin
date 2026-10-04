@@ -30,6 +30,8 @@ audience: [agent]
 verification:
   method: {method}
   via: "{via}"
+wording:
+  agent: "Builds must pass."
 {defect}---
 
 **{rid}**: Builds MUST pass.

@@ -70,6 +70,12 @@ def extract_rules(root):
         audience = fields.get("audience")
         if not isinstance(audience, list) or not audience:
             row["defect"] = "audience missing"
+        elif "defect" not in row:
+            wording = fields.get("wording")
+            if not isinstance(wording, dict):
+                row["defect"] = "wording missing"
+            elif set(wording) != set(audience):
+                row["defect"] = "wording does not match audience"
         verification = fields.get("verification")
         if isinstance(verification, dict) and verification.get("method") in fm.METHODS:
             row["tier"] = verification["method"]

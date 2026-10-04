@@ -7,6 +7,9 @@ audience: [human, agent]
 verification:
   method: <ci-blocking|ci-checked|human-verified|written-only>
   via: "<the check that SHOULD enforce this rule, as an intended name: CI job, script, or review step; may not exist yet>"
+wording:
+  human: "<one line for CONTRIBUTING.md>"
+  agent: "<one line for CLAUDE.md and .claude/rules/>"
 ---
 
 # <short human title>

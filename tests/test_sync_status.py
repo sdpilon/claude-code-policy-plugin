@@ -16,18 +16,28 @@ audience: [{audience}]
 verification:
   method: written-only
   via: ""
-{synced}---
+{wording}{synced}---
 
 **{id}**: Rule {id} MUST hold.
 """
 
 
+def rule_text(title, audience, rule_id, synced=""):
+    audiences = [a.strip() for a in audience.split(",")]
+    wording = "".join(f'  {a}: "Rule {rule_id} MUST hold for {a}."\n' for a in audiences)
+    return RULE.format(
+        title=title,
+        audience=audience,
+        id=f"{rule_id:03d}",
+        wording=f"wording:\n{wording}",
+        synced=synced,
+    )
+
+
 def write(d, rule_id, audience, synced=""):
     path = Path(d) / "rule" / f"{rule_id:03d}.md"
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        RULE.format(title=f"t{rule_id}", audience=audience, id=f"{rule_id:03d}", synced=synced)
-    )
+    path.write_text(rule_text(f"t{rule_id}", audience, rule_id, synced))
     return path
 
 
@@ -56,11 +66,7 @@ class SyncStatusTests(unittest.TestCase):
         with scratch() as d:
             path = write(d, 1, "agent")
             digest = sync_status.content_hash(path.read_text())
-            path.write_text(
-                RULE.format(
-                    title="t1", audience="agent", id="001", synced=f"synced_hash: {digest}\n"
-                )
-            )
+            path.write_text(rule_text("t1", "agent", 1, f"synced_hash: {digest}\n"))
             row = load(run(SYNC, "--dir", str(Path(d) / "rule"))[1])[0]
             self.assertFalse(row["changed"])
 
@@ -68,11 +74,7 @@ class SyncStatusTests(unittest.TestCase):
         with scratch() as d:
             path = write(d, 1, "agent")
             digest = sync_status.content_hash(path.read_text())
-            path.write_text(
-                RULE.format(
-                    title="edited", audience="agent", id="001", synced=f"synced_hash: {digest}\n"
-                )
-            )
+            path.write_text(rule_text("edited", "agent", 1, f"synced_hash: {digest}\n"))
             row = load(run(SYNC, "--dir", str(Path(d) / "rule"))[1])[0]
             self.assertTrue(row["changed"])
 

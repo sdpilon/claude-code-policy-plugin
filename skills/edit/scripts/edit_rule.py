@@ -35,6 +35,8 @@ EDITABLE = {
     "verification.via",
     "statement",
     "rationale",
+    "wording.human",
+    "wording.agent",
 }
 
 
@@ -101,6 +103,13 @@ def apply_set(fields, rest, rule_id, key, value):
         rest = set_statement(rest, rule_id, value.strip())
     elif key == "rationale":
         rest = set_rationale(rest, value.strip())
+    elif key.startswith("wording."):
+        normalized = fm.normalize_wording(value)
+        if not normalized:
+            raise ValueError(f"{key} must be non-empty")
+        wording = dict(fields["wording"]) if isinstance(fields.get("wording"), dict) else {}
+        wording[key.split(".", 1)[1]] = normalized
+        fields["wording"] = wording
     return fields, rest
 
 
@@ -112,6 +121,14 @@ def edit_text(text, rule_id, sets):
     new_rest = rest
     for key, value in sets:
         fields, new_rest = apply_set(fields, new_rest, rule_id, key, value)
+    audience = fields.get("audience") if isinstance(fields.get("audience"), list) else []
+    for key, _ in sets:
+        if key.startswith("wording.") and key.split(".", 1)[1] not in audience:
+            raise ValueError(f"{key} is set but {key.split('.', 1)[1]} is not in audience")
+    if isinstance(fields.get("wording"), dict):
+        # Wording for an audience the rule no longer targets is dropped. Its last-written text stays
+        # in synced_wording, which is what sync uses to find it.
+        fields["wording"] = {a: t for a, t in fields["wording"].items() if a in audience}
     if fields == before_fields and new_rest == rest:
         return text, []
     fields["modified"] = fm.now_utc()
@@ -182,6 +199,11 @@ def main(argv):
             print(f"preview {raw}")
             for key, value in sets:
                 print(f"  {key} -> {value}")
+            if any(key == "statement" for key, _ in sets):
+                # Constitution Principle II: a new statement means each audience wording is re-approved.
+                wording = fm.parse(new_text).get("wording", {})
+                for audience_key in sorted(wording):
+                    print(f"  review wording.{audience_key}: {wording[audience_key]}")
         return 0
 
     return commit_plan(plan, rule_dir)

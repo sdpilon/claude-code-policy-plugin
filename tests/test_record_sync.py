@@ -17,10 +17,26 @@ audience: [agent]
 verification:
   method: ci-blocking
   via: "secret-scan job"
+wording:
+  agent: "Never print secrets to CI output."
 ---
 
 **{id}**: Secrets MUST NOT appear in CI logs.
 """
+
+
+def without_synced_fields(text):
+    """Drop the synced_hash line and the synced_wording block; every other line is kept as-is."""
+    out, in_block = [], False
+    for line in text.splitlines(keepends=True):
+        if line.startswith(("synced_hash:", "synced_wording:")):
+            in_block = line.startswith("synced_wording:")
+            continue
+        if in_block and line.startswith("  "):
+            continue
+        in_block = False
+        out.append(line)
+    return "".join(out)
 
 
 def make_rules(root, ids):
@@ -74,12 +90,7 @@ class RecordSyncTests(unittest.TestCase):
             original = (rule_dir / "001.md").read_text(encoding="utf-8")
             run(RECORD, "--dir", str(rule_dir), "001")
             recorded = (rule_dir / "001.md").read_text(encoding="utf-8")
-            stripped = "".join(
-                line
-                for line in recorded.splitlines(keepends=True)
-                if not line.startswith("synced_hash:")
-            )
-            self.assertEqual(stripped, original)
+            self.assertEqual(without_synced_fields(recorded), original)
 
     def test_recording_an_edited_rule_updates_its_hash(self):
         with scratch() as d:

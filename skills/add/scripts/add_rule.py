@@ -28,6 +28,28 @@ def fail(message, code=2):
     sys.exit(code)
 
 
+def parse_wording(raw_items, audience):
+    """Map each audience to its normalized wording. Exactly one wording per audience is required."""
+    wording = {}
+    for item in raw_items:
+        if "=" not in item:
+            fail(f"--wording expects AUDIENCE=TEXT, got {item!r}")
+        key, text = item.split("=", 1)
+        key = key.strip()
+        if key not in audience:
+            fail(f"--wording audience {key!r} is not in --audience")
+        if key in wording:
+            fail(f"--wording given more than once for {key!r}")
+        normalized = fm.normalize_wording(text)
+        if not normalized:
+            fail(f"--wording for {key!r} is empty")
+        wording[key] = normalized
+    missing = [a for a in audience if a not in wording]
+    if missing:
+        fail(f"--wording is required for each audience; missing {', '.join(missing)}")
+    return {a: wording[a] for a in audience}
+
+
 def main(argv):
     p = argparse.ArgumentParser(prog="add_rule.py")
     p.add_argument("--statement", required=True)
@@ -39,6 +61,13 @@ def main(argv):
     p.add_argument("--dir", default="", help="optional subdirectory under the rule tree")
     p.add_argument("--policy-dir", default=".policy")
     p.add_argument("--rationale", default="")
+    p.add_argument(
+        "--wording",
+        action="append",
+        default=[],
+        metavar="AUDIENCE=TEXT",
+        help="one-sentence wording for an audience; repeat once per audience in --audience",
+    )
     args = p.parse_args(argv)
 
     audience = [a.strip() for a in args.audience.split(",") if a.strip()]
@@ -51,6 +80,7 @@ def main(argv):
     statement_problems = fm.validate_statement(args.statement)
     if statement_problems:
         fail("; ".join(statement_problems))
+    wording = parse_wording(args.wording, audience)
 
     policy_dir = Path(args.policy_dir)
     rule_root = policy_dir / "rule"
@@ -65,6 +95,7 @@ def main(argv):
         "modified": now,
         "audience": audience,
         "verification": {"method": args.verification_method, "via": args.verification_via},
+        "wording": wording,
     }
 
     try:

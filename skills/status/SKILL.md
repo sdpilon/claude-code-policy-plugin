@@ -16,8 +16,9 @@ Read-only. Runs a deterministic script and presents the result. It never edits r
    ```
 
 2. Present a table with one row per rule: `ID`, `title`, `tier`, and `via`. Sort by ID.
-3. Report **defects** separately: a rule with `"defect"` set (missing `audience`, malformed
-   frontmatter) is listed with its problem, not hidden.
+3. Report **defects** separately: a rule with `"defect"` set (missing `audience`, missing
+   `wording`, wording keys that do not match `audience`, malformed frontmatter) is listed with
+   its problem, not hidden.
 4. Report **gaps** separately: any ID in `"gaps"` has no rule file and no tombstone, so the
    rule was probably deleted without `/policy:retire`. Name the gap IDs and suggest
    `/policy:retire` or restoring the rule.

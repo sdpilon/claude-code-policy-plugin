@@ -24,8 +24,16 @@ above this skill's base directory.
 | `verification.via` | the intended check name |
 | `statement` | one sentence with exactly one modal verb (MUST, SHOULD, MUST NOT, MAY) |
 | `rationale` | free text; an empty value removes it |
+| `wording.human` | one line; the wording for `CONTRIBUTING.md` |
+| `wording.agent` | one line; the wording for `CLAUDE.md` and `.claude/rules/` |
 
-`created`, `synced_hash`, and the rule ID cannot be edited. The script rejects them by name.
+`created`, `synced_hash`, `synced_wording`, and the rule ID cannot be edited. The script rejects
+them by name.
+
+Wording is per audience. A `wording.<audience>` edit is rejected unless that audience is in the
+rule's `audience`. Changing `audience` drops the wording of any audience the rule no longer
+targets. Adding an audience requires its `wording.<audience>` in the same command, or the edit is
+rejected. Whitespace in a wording is collapsed to single spaces.
 
 ## Steps
 
@@ -38,11 +46,14 @@ above this skill's base directory.
    ```
 
    It prints the proposed change for each rule and writes nothing. A rejected rule prints its
-   reason and exits 2.
+   reason and exits 2. When the preview includes a `statement`, it also prints a
+   `review wording.<audience>` line for each audience of that rule.
 3. **Checkpoint (Constitution Principle III).** Show the person the preview: each rule ID, the old
-   and new values, and any rejections. Ask whether to apply, using `AskUserQuestion` when it is
-   available. Do not apply until they say yes. If a rule was rejected, fix the value and preview
-   again. Don't apply the rest of the batch without saying so.
+   and new values, and any rejections. When the statement changed, show each `review wording`
+   line too, because each audience's wording must be approved again (constitution Principle II).
+   Ask whether to apply, using `AskUserQuestion` when it is available. Do not apply until they
+   say yes. If a rule was rejected, fix the value and preview again. Don't apply the rest of the
+   batch without saying so.
 4. **Apply.** Run the same command without `--preview`. Every target is validated first. If any
    target is rejected, nothing is written and the command exits 2. Report each `changed` and
    `unchanged` line.

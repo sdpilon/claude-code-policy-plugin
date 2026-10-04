@@ -13,26 +13,34 @@ append to an existing file.
 
 1. **Confirm it's repo policy, not personal preference.** If it's unclear, run `/policy:judge`
    first, then come back here.
-2. **Draft the statement.** One sentence, exactly one modal verb (MUST / SHOULD / MUST NOT /
-   MAY). Write a short rationale that stands alone; cross-link related rules by number
-   (`See also [048](048.md).`) instead of repeating their reasoning.
+2. **Draft the statement and the wording.** The statement is one sentence, with exactly one
+   modal verb (MUST / SHOULD / MUST NOT / MAY). Write a short rationale that stands alone;
+   cross-link related rules by number (`See also [048](048.md).`) instead of repeating their
+   reasoning. Then draft one wording line per audience in `audience`. Each is a single line,
+   written for the doc it goes into: `human` for `CONTRIBUTING.md`, `agent` for `CLAUDE.md` and
+   `.claude/rules/`. Sync copies each line verbatim.
 3. **Set the required fields** and confirm them with the user before writing:
    - `audience`: `human`, `agent`, or both. This decides which derived docs the rule reaches.
+   - `wording`: one single-line wording per audience in `audience`. Required for each one.
    - `verification.method`: `ci-blocking`, `ci-checked`, `human-verified`, or `written-only`.
      Name the check that SHOULD enforce it, as an intended name: a CI job, script, or review
      step (`verification.via`). The check may not exist yet. Don't describe its current state.
    - `title`: a short human name. It's display-only and can change later.
-4. **Run the script** (this is the checkpoint: show the person the statement, fields, and
-   rationale first, and wait for a go-ahead):
+4. **Run the script** (this is the checkpoint: show the person the statement, each audience's
+   wording, the fields, and the rationale first, and wait for a go-ahead). Pass one `--wording`
+   for each audience:
 
    ```sh
    python3 ${CLAUDE_PLUGIN_ROOT}/skills/add/scripts/add_rule.py \
      --statement "<subject> MUST <requirement>." --title "<title>" \
      --audience human,agent --verification-method ci-checked \
-     --verification-via "<check name>" --rationale "<paragraph>"
+     --verification-via "<check name>" --rationale "<paragraph>" \
+     --wording "human=<one-line wording for CONTRIBUTING.md>" \
+     --wording "agent=<one-line wording for CLAUDE.md>"
    ```
 
-   The script allocates the ID, writes the file, and prints `{"id", "path"}`.
+   The script allocates the ID, writes the file, and prints `{"id", "path"}`. It exits 2 and
+   writes nothing if a wording is missing, empty, or given for an audience not in `--audience`.
 5. **Report**: the new ID and path. Say that derived docs (`CONTRIBUTING.md`, `CLAUDE.md`,
    `.claude/rules/`) are now out of sync and that `/policy:sync` will propagate the change.
 
@@ -40,7 +48,7 @@ append to an existing file.
 
 - Add one rule per invocation. Never edit another rule's file while adding.
 - Don't commit unless the user asks. Follow this repo's own git conventions.
-- To change an existing rule's wording, edit its file directly, then run `/policy:sync`.
-  Don't re-add it under a new ID.
+- To change an existing rule's statement or wording, use `/policy:edit`, then run
+  `/policy:sync`. Don't re-add it under a new ID.
 - To remove a rule, use `/policy:retire`. Don't delete the file by hand, since that leaves
   an ID gap that status reports.
