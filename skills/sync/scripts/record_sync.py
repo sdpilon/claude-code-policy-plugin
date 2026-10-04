@@ -6,6 +6,9 @@ Writes only the synced_hash line and the synced_wording block in the frontmatter
 every other field stay byte-identical. synced_wording holds the wording for the rule's current
 audiences, so audiences dropped since the last record are pruned. Validates every ID before
 writing anything, so a bad ID writes nothing.
+
+A rule is refused, and nothing is written, while it still has an unapplied proposed change: a
+pending addition, or a removal whose text is still found in its doc (FR-004, R14).
 """
 
 import argparse
@@ -26,7 +29,7 @@ sys.path.insert(
 import policy_frontmatter as fm
 import policy_ids as ids
 import policy_lock
-from sync_status import AUDIENCE_ORDER, content_hash
+from sync_status import AUDIENCE_ORDER, build_row, content_hash, unapplied
 
 LOCK_TIMEOUT = 10.0
 ChangedDuringRecord = policy_lock.ChangedDuringWrite
@@ -111,9 +114,16 @@ def parse_expect(raw_items, ids_given):
     return expected
 
 
+def describe(entry):
+    if "reason" not in entry:
+        return f"addition to {entry['path']}"
+    return f"{entry['reason']} removal from {entry['path']}"
+
+
 def main(argv):
     p = argparse.ArgumentParser(prog="record_sync.py")
     p.add_argument("--dir", default=".policy/rule")
+    p.add_argument("--root", default=".", help="directory derived-doc paths resolve against")
     p.add_argument(
         "--expect",
         action="append",
@@ -124,6 +134,7 @@ def main(argv):
     p.add_argument("ids", nargs="+", metavar="ID")
     args = p.parse_args(argv)
     rule_dir = Path(args.dir)
+    doc_root = Path(args.root)
     expected = parse_expect(args.expect, args.ids)
 
     # Phase 1: resolve and compute every change before any write.
@@ -140,6 +151,14 @@ def main(argv):
         if int(raw) in expected and expected[int(raw)] != digest:
             fail(
                 f"rule {raw} changed since it was proposed; nothing was written. Re-run sync.",
+                code=1,
+            )
+        outstanding = unapplied(build_row(current, int(raw), doc_root))
+        if outstanding:
+            listed = "; ".join(describe(e) for e in outstanding)
+            fail(
+                f"rule {raw} still has unapplied changes ({listed}); nothing was written. "
+                "Apply them, or leave the rule out of this record.",
                 code=1,
             )
         plan.append((raw, path, current, updated))

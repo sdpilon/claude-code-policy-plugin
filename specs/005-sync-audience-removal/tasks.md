@@ -69,9 +69,9 @@
 
 ### Implementation for User Story 1
 
-- [X] T025 [US1] Update step 4 of `skills/sync/SKILL.md`: propose removals only for `stale_in` entries with `status: "found"`; report `not_found`, `ambiguous`, and `absent` entries by document and rule ID with no removal proposed (FR-002)
+- [X] T025 [US1] Update step 4 of `skills/sync/SKILL.md`: propose removals only for `stale_in` entries with `status: "found"`; report `not_found`, `ambiguous`, and `absent` entries by document and rule ID with no removal proposed (FR-002) Cites FR-006.
 - [X] T026 [US1] Update step 4 of `skills/sync/SKILL.md` for additions: each proposed addition states the target section and the position within it (FR-008); a rule listed in `missing_wording` is reported as a defect and not proposed; each addition writes only the `wording` for that document's audience, copied verbatim (FR-011)
-- [X] T027 [US1] Confirm the `description` in the frontmatter of `skills/sync/SKILL.md`, `skills/add/SKILL.md`, and `skills/edit/SKILL.md` is unchanged; for any that changed, run fresh-context trigger tests (constitution Plugin Constraints) and record them in `specs/005-sync-audience-removal/checklists/trigger-tests.md`
+- [X] T027 [US1] Confirm the `description` in the frontmatter of `skills/sync/SKILL.md`, `skills/add/SKILL.md`, and `skills/edit/SKILL.md` is unchanged; none changed, so no fresh-context trigger tests were needed (constitution Plugin Constraints)
 
 **Checkpoint**: User Story 1 is independently testable. Quickstart Scenarios 1, 4, 5, and 6 pass.
 
@@ -152,7 +152,7 @@
 ## Notes
 
 - [P] tasks = different files from their neighbors; each still waits for the tasks it depends on (see Dependencies)
-- [Story] label maps each task to a user story for traceability
+- [Story] label maps each task to a user story for traceability. Phases 5 onward are convergence and amendment phases, so their tasks carry no story label
 - Constraints from data-model.md are carried into the tasks that enforce them (T002–T004, T006, T007, T018–T020)
 - Commit after each phase, not each task, and only when the user asks
 
@@ -201,3 +201,100 @@
 **Purpose**: Remaining gaps found by `/speckit-converge` against spec.md, plan.md, tasks.md, and the constitution
 
 - [X] T050 Update the `/policy:edit` bullet in `README.md` to say that a statement change needs `--reviewed-wording` after the person approves each audience wording, and that an audience drop is rejected while its wording has an edit sync has not recorded, per FR-009, FR-012, and the constitution's README current-state rule (partial)
+
+## Phase 11: Amendment (partial approval and re-proposal)
+
+**Purpose**: Work added by the 2026-10-04 clarifications and plan notes for partial approval and already-applied changes (FR-004, R14, R15)
+
+- [X] T051 Update step 4 of `skills/sync/SKILL.md` so additions come only from the script's `pending` list, not from every target, and an addition already in place is not proposed, per FR-004 and R15
+- [X] T052 Update step 6 and step 7 of `skills/sync/SKILL.md` so a rule is passed to `record_sync` only when every proposed change for it was applied; any declined or failed change leaves the rule out of the call and reported as changed, replacing "only the IDs that were approved and applied", per FR-004 and R14
+- [X] T053 In `skills/sync/scripts/sync_status.py`, add a per-rule `pending` list (each target whose current `wording` is not present exactly once, with `kind` and `path`; `kind: "file"` requires content equal to the wording plus a newline), and drop a `reworded` stale entry with `status: "not_found"` when the new wording is present once in the same doc, per FR-004, R15, and `contracts/sync_status.md`
+- [X] T054 Add tests in `tests/test_sync_status.py` for `pending` (present, absent, and ambiguous targets, and a present agent-only file) and for a reworded removal already applied (new wording present once, old text absent, entry omitted), per R15; plus an absent doc that is never created (FR-007) and stale entries that name document, rule, and text (SC-004)
+- [X] T055 Add a quickstart scenario in `quickstart.md` for partial approval: an approved addition plus a declined removal leaves the rule `changed`, and the next run does not re-propose the addition, per FR-004 and R14
+- [X] T056 Run `tools/check.sh` and the unittest suite, and record the results, per the constitution's checks
+
+## Phase 12: Analysis remediation (2026-10-04)
+
+**Purpose**: Work from the second `/speckit-analyze` run: K1 (script-enforced record), K2 to K5 (doc consistency)
+
+- [X] T057 In `skills/sync/scripts/sync_status.py`, extract `build_row(text, rule_id, doc_root)` so `record_sync` and `sync_status` share one row builder, and add `unapplied(row)` for pending additions and found removals, per FR-004, R14 (K1)
+- [X] T058 In `skills/sync/scripts/record_sync.py`, add `--root` and refuse (exit 1, nothing written) any rule with an unapplied change, per FR-004 and R14 (K1)
+- [X] T059 Add `RecordSyncUnappliedTests` in `tests/test_record_sync.py`: a pending addition is refused, Scenario 11 partial approval is refused and then recorded, and a hand-edited not_found report does not block, per FR-004, R14 (K1, K3)
+- [X] T060 Make the record and sync test fixtures write the derived docs a sync would leave, and pass `--root` to each record call, so record tests check the refusal rules rather than the repo's own files (K1)
+- [X] T061 Update step 6 and step 7 of `skills/sync/SKILL.md` and the `record_sync.py` section of `contracts/rule_wording.md` for the script-enforced refusal and `--root`, per FR-004 (K1)
+- [X] T062 Resolve the R12 open point in `research.md` (FR-002 covers it), update the Scenario 11 pass condition and the automated-coverage line in `quickstart.md` (K2, K3)
+- [X] T063 Correct the T027 trigger-test path (no description changed, so no trigger tests were needed), and cite FR-006 in T025 (K4, K5)
+- [X] T064 Run `tools/check.sh` and the unittest suite, and record the results (verification)
+
+## Phase 13: Convergence
+
+**Purpose**: Remaining gaps found by `/speckit-converge` against spec.md, plan.md, tasks.md, and the constitution
+
+- [X] T065 Make `build_row` in `skills/sync/scripts/sync_status.py` report a `kind: "file"` target that already exists with content other than its wording plus a newline under a new `held` list, and leave it out of `pending`, so sync never proposes overwriting a hand-edited file (per Assumptions: hand-edited derived text is reported, not removed; FR-002) (contradicts)
+- [X] T066 Add tests in `tests/test_sync_status.py` for a hand-edited `.claude/rules/<id>.md` (listed in `held`, absent from `pending`, file bytes unchanged) and for one that equals its wording plus a newline (not held, not pending), per Assumptions and FR-002 (missing)
+- [X] T067 Update step 4 of `skills/sync/SKILL.md` so `held` files are reported by path and rule ID and are never proposed for overwrite, per Assumptions and FR-002 (partial)
+- [X] T068 Update the `/policy:sync` bullet in `README.md` to describe the current behavior: `record_sync` refuses a rule with an outstanding addition or removal, and held files are reported, not overwritten, per FR-004, Constitution Development Workflow (README describes current state) (partial)
+
+## Phase 14: Convergence
+
+**Purpose**: Remaining gaps found by `/speckit-converge` after Phase 13 (held files), in the plan's contract, data model, and quickstart
+
+- [X] T069 Add `held` to the output contract in `specs/005-sync-audience-removal/contracts/sync_status.md`: its meaning, its entry shape, that it is never proposed for overwrite, and that the "New fields" sentence names `pending` and `held` as well as `missing_wording` and `stale_in`, per plan Phase 1 contract `sync_status.md` and Assumptions (partial)
+- [X] T070 Add the `pending` and `held` row fields to the sync-row table in `specs/005-sync-audience-removal/data-model.md`, per plan Phase 1 output `data-model.md` (partial)
+- [X] T071 Add a quickstart scenario to `specs/005-sync-audience-removal/quickstart.md` for a hand-edited agent-only file: it appears in `held` and is not overwritten by sync, per plan Phase 1 quickstart and Assumptions (partial)
+
+## Phase 15: Quickstart fixes (hand-run defects)
+
+**Purpose**: Defects in `quickstart.md` found by a fresh hand run of Scenarios 1 to 10 on commit 4dbdfda; the product behaved as specified
+
+- [X] T072 In `specs/005-sync-audience-removal/quickstart.md` Scenario 9, replace "`.claude/rules/001.md` does not exist yet" with an instruction to overwrite it, since Setup already creates it, per quickstart accuracy (quickstart defect 1)
+- [X] T073 In `specs/005-sync-audience-removal/quickstart.md` Scenario 6, replace "delete the `agent` line under `wording:`" with a concrete command that removes only the first `agent:` line (the `wording:` entry, not the `synced_wording:` entry), e.g. the awk form the hand run verified, per quickstart accuracy (quickstart defect 2)
+- [X] T074 In `specs/005-sync-audience-removal/quickstart.md`, add a note that `$D` and `$PLUGIN` are set in Setup and reused by every scenario, so each scenario block depends on Setup (quickstart defect 3)
+
+## Phase 16: Quickstart fixes (second hand run)
+
+**Purpose**: Quickstart defects found by a fresh hand run of Scenarios 1 to 12 on commit c713afe; the product behaved as specified
+
+- [X] T075 In `specs/005-sync-audience-removal/quickstart.md` Scenario 10, add a check that the new statement is written, for example `grep -n 'build logs' .policy/rule/001.md` against the body line `**001**:`, since the statement is stored in the body, not in a `statement` key (quickstart defect 1)
+- [X] T076 In `specs/005-sync-audience-removal/quickstart.md` Scenario 2, give the command that removes the exact sentence, for example `printf '' > CONTRIBUTING.md` (quickstart defect 2)
+- [X] T077 In `specs/005-sync-audience-removal/quickstart.md` Scenario 9, state the pass condition for a hand-edited file as "`pending` is empty and `status` is `not_found`", instead of "no deletion is proposed" (quickstart defect 3)
+- [X] T078 In `specs/005-sync-audience-removal/quickstart.md` Setup, say that `$D` and `$PLUGIN` must be set in the same shell as each scenario, or that each scenario should run as one script with absolute paths, since a sandboxed shell does not keep `cd` or variables between commands (quickstart defect 4)
+
+## Phase 17: Quickstart fixes (third hand run)
+
+**Purpose**: Quickstart wording defects found by a fresh hand run of Scenarios 1 to 10 on commit fefcfdb; the product behaved as specified
+
+- [X] T079 In `specs/005-sync-audience-removal/quickstart.md` Scenario 9, say that `stale_in` includes `.claude/rules/001.md` and may also list `CLAUDE.md`, since the agent audience was dropped, so a reader does not treat the extra entry as a failure (quickstart defect 1)
+- [X] T080 In `specs/005-sync-audience-removal/quickstart.md` Scenario 9, add the hand-edit as a run step, `printf 'Someone hand-edited this.\n' > .claude/rules/001.md`, before the sync that checks the `not_found` status and empty `pending` (quickstart defect 2)
+- [X] T081 In `specs/005-sync-audience-removal/quickstart.md` Scenario 10, add the two commands the pass condition describes: `edit_rule.py --dir .policy/rule --set statement="..." --preview 001` and the same with `--reviewed-wording 001` (quickstart defect 3)
+- [X] T082 In `specs/005-sync-audience-removal/quickstart.md` Scenario 6, state that the `awk` removes the first `agent:` match, which is the `wording:` entry because it comes first in the file (quickstart defect 4)
+
+## Phase 18: Changed-state and quickstart gaps (hand run)
+
+**Purpose**: A rule with a pending addition reads `changed: false`, so sync would skip it, and `record_sync` refuses it. Found by the hand run of quickstart Scenarios 1 to 12 on commit 829c053; the spec's FR-003 and FR-008 require changed rules to be proposed
+
+- [X] T083 In `skills/sync/scripts/sync_status.py`, make `build_row` report `changed: true` when `pending` is non-empty, so a rule whose derived doc has lost its wording is proposed, not skipped (FR-003, FR-008; contradicts the data-model `changed` definition)
+- [X] T084 Add a test in `tests/test_sync_status.py` that a recorded rule whose `CONTRIBUTING.md` was emptied reads `changed: true` with `pending` listing `CONTRIBUTING.md`, and that a recorded rule with its wording in place reads `changed: false` (FR-003, FR-008)
+- [X] T085 Update the `changed` row in the sync-row table of `specs/005-sync-audience-removal/data-model.md` to include a non-empty `pending`, so the doc matches the code (plan Phase 1 output `data-model.md`)
+- [X] T086 In `specs/005-sync-audience-removal/quickstart.md` Scenario 2, state that it runs after Scenario 1's edit, since a fresh Setup is refused by `record_sync` with a pending addition (quickstart defect from the hand run)
+- [X] T087 Decide, and record in `specs/005-sync-audience-removal/research.md`, whether a non-empty `held` list should also make a rule `changed`; the plan keeps held files as a report only, so the default is no (plan decision R15; Assumptions on hand-edited text)
+
+## Phase 19: Convergence
+
+**Purpose**: Remaining gap found by `/speckit-converge` after Phase 18 (the `changed` definition now includes `pending`)
+
+- [X] T088 Update the `changed` guarantee in `specs/005-sync-audience-removal/contracts/sync_status.md` (line 54) to list `pending` with `stale_in` and `missing_wording`, so the contract matches `build_row`, per plan Phase 1 contract `sync_status.md` and FR-003, FR-008 (partial)
+
+## Phase 20: Quickstart wording (fourth hand run)
+
+**Purpose**: Quickstart wording defects found by a fresh hand run of Scenarios 1 to 12 on commit d05822c; the product behaved as specified
+
+- [X] T089 In `specs/005-sync-audience-removal/quickstart.md` Scenario 11, reword the pass condition "pending is empty because the new wording is already in place once" to say that the added wording is already in `CONTRIBUTING.md`, so no addition is left to apply (quickstart defect 1)
+- [X] T090 In `specs/005-sync-audience-removal/quickstart.md` Scenario 7, either state the shape of a `pending` entry (`path`, `audience`, `kind`, with no text) or drop the sentence that says the removal pairs with an addition, since `sync_status` shows no text for the addition (quickstart defect 2)
+- [X] T091 In `specs/005-sync-audience-removal/quickstart.md` Scenario 11, add a check that `CONTRIBUTING.md` is byte-identical after the refused `record_sync`, for example `cmp` against a saved copy, since the scenario says nothing is written but the hand run checked only the exit code and message (quickstart defect 3)
+
+## Phase 21: Quickstart wording (fifth hand run)
+
+**Purpose**: Quickstart wording defect found by a fresh hand run of Scenarios 1 to 10 on commit 3ca4c54; the product behaved as specified
+
+- [X] T092 In `specs/005-sync-audience-removal/quickstart.md` Scenarios 4 and 9, state the pass condition literally as `pending: []`, instead of "no removal is proposed" or "pending is empty", since the JSON has no removal field and the check is the absence of a `pending` entry (quickstart defect from the hand run)

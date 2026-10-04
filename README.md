@@ -36,10 +36,12 @@ generalized to drop riposte-specific content.
   audience's `wording` as the text to write. Proposes removal of wording last written for an
   audience that was dropped, or reworded while still targeted, only when that text matches
   exactly once. A reworded audience's removal comes with an addition of the new wording. Text
-  that was reworded by hand is reported, never removed. Every proposed addition states its placement. Propagates
-  only approved changes, records each applied rule's `synced_hash` and `synced_wording`
-  through `skills/sync/scripts/record_sync.py`, and skips rules whose content hasn't changed
-  since the last sync. Prose that already exists in a repo's docs is copied into rule files
+  that was reworded by hand is reported, never removed. Every proposed addition states its
+  placement. Propagates only approved changes, records each applied rule's `synced_hash` and
+  `synced_wording` through `skills/sync/scripts/record_sync.py`, and skips rules whose content
+  hasn't changed since the last sync. `record_sync` refuses a rule while an addition or removal
+  for it is still outstanding. An agent-only file edited by hand is reported as held and is
+  never overwritten. Prose that already exists in a repo's docs is copied into rule files
   by hand, once.
 - **`/policy:judge`**: decides whether a proposed rule is repo policy or personal
   preference that belongs in memory or a local doc instead.

@@ -2,7 +2,7 @@ import sys
 import unittest
 from pathlib import Path
 
-from tests._cli import REPO, load, run, scratch
+from tests._cli import REPO, load, run, scratch, settle_docs
 
 SYNC = "skills/sync/scripts/sync_status.py"
 sys.path.insert(0, str(REPO / "skills" / "sync" / "scripts"))
@@ -67,7 +67,8 @@ class SyncStatusTests(unittest.TestCase):
             path = write(d, 1, "agent")
             digest = sync_status.content_hash(path.read_text())
             path.write_text(rule_text("t1", "agent", 1, f"synced_hash: {digest}\n"))
-            row = load(run(SYNC, "--dir", str(Path(d) / "rule"))[1])[0]
+            settle_docs(d, {"agent": "Rule 1 MUST hold for agent."})
+            row = load(run(SYNC, "--dir", str(Path(d) / "rule"), "--root", str(d))[1])[0]
             self.assertFalse(row["changed"])
 
     def test_content_change_after_sync_is_detected(self):
@@ -287,8 +288,11 @@ class AudienceChangeRecordTests(unittest.TestCase):
     def test_audience_change_after_record_reads_changed(self):
         with scratch() as d:
             write(d, 1, "human, agent")
+            settle_docs(
+                d, {"human": "Rule 1 MUST hold for human.", "agent": "Rule 1 MUST hold for agent."}
+            )
             rule_dir = Path(d) / "rule"
-            self.assertEqual(run(RECORD, "--dir", str(rule_dir), "001")[0], 0)
+            self.assertEqual(run(RECORD, "--root", str(d), "--dir", str(rule_dir), "001")[0], 0)
             self.assertFalse(sync_rows(d, Path(d))[0]["changed"])
             code, out, _ = run(EDIT, "--dir", str(rule_dir), "--set", "audience=agent", "001")
             self.assertEqual(code, 0, out)
@@ -299,8 +303,11 @@ class AudienceChangeRecordTests(unittest.TestCase):
     def test_recorded_rule_with_no_audience_change_reads_unchanged(self):
         with scratch() as d:
             write(d, 1, "human, agent")
+            settle_docs(
+                d, {"human": "Rule 1 MUST hold for human.", "agent": "Rule 1 MUST hold for agent."}
+            )
             rule_dir = Path(d) / "rule"
-            self.assertEqual(run(RECORD, "--dir", str(rule_dir), "001")[0], 0)
+            self.assertEqual(run(RECORD, "--root", str(d), "--dir", str(rule_dir), "001")[0], 0)
             self.assertFalse(sync_rows(d, Path(d))[0]["changed"])
 
 
@@ -379,6 +386,211 @@ class RewordedAndReasonTests(unittest.TestCase):
             (root / "CONTRIBUTING.md").write_text(HUMAN + "\n", encoding="utf-8")
             entry = next(e for e in sync_rows(d, root)[0]["stale_in"] if e["audience"] == "human")
             self.assertEqual(entry["reason"], "dropped")
+
+
+class PendingAdditionTests(unittest.TestCase):
+    """FR-004 and R15: additions are proposed only for targets where the wording is not in place."""
+
+    def test_missing_wording_in_target_is_pending(self):
+        with scratch() as d:
+            write_rule(d, ["human"], {"human": HUMAN}, {})
+            root = Path(d) / "docs"
+            root.mkdir()
+            row = sync_rows(d, root)[0]
+            self.assertEqual(
+                row["pending"], [{"path": "CONTRIBUTING.md", "audience": "human", "kind": "span"}]
+            )
+
+    def test_wording_already_in_target_is_not_pending(self):
+        with scratch() as d:
+            write_rule(d, ["human"], {"human": HUMAN}, {})
+            root = Path(d) / "docs"
+            root.mkdir()
+            (root / "CONTRIBUTING.md").write_text(f"Intro.\n\n{HUMAN}\n", encoding="utf-8")
+            self.assertEqual(sync_rows(d, root)[0]["pending"], [])
+
+    def test_ambiguous_wording_in_target_is_not_pending(self):
+        with scratch() as d:
+            write_rule(d, ["human"], {"human": HUMAN}, {})
+            root = Path(d) / "docs"
+            root.mkdir()
+            (root / "CONTRIBUTING.md").write_text(f"{HUMAN}\n\n{HUMAN}\n", encoding="utf-8")
+            self.assertEqual(sync_rows(d, root)[0]["pending"], [])
+
+    def test_agent_only_file_with_exact_content_is_not_pending(self):
+        with scratch() as d:
+            write_rule(d, ["agent"], {"agent": AGENT}, {"agent": AGENT})
+            root = Path(d) / "docs"
+            (root / ".claude" / "rules").mkdir(parents=True)
+            (root / ".claude" / "rules" / "001.md").write_text(AGENT + "\n", encoding="utf-8")
+            (root / "CLAUDE.md").write_text(f"{AGENT}\n", encoding="utf-8")
+            self.assertEqual(sync_rows(d, root)[0]["pending"], [])
+
+    def test_absent_doc_is_pending_and_is_never_created(self):
+        with scratch() as d:
+            write_rule(d, ["human"], {"human": HUMAN}, {})
+            root = Path(d) / "docs"
+            root.mkdir()
+            row = sync_rows(d, root)[0]
+            self.assertEqual(row["pending"][0]["path"], "CONTRIBUTING.md")
+            self.assertFalse((root / "CONTRIBUTING.md").exists())
+
+
+class OutputClarityTests(unittest.TestCase):
+    """SC-004: the sync output alone names the document, the rule, and the text it will change."""
+
+    def test_stale_entry_names_document_rule_and_text(self):
+        with scratch() as d:
+            write_rule(d, ["agent"], {"agent": AGENT}, {"human": HUMAN, "agent": AGENT})
+            root = Path(d) / "docs"
+            root.mkdir()
+            (root / "CONTRIBUTING.md").write_text(HUMAN + "\n", encoding="utf-8")
+            row = sync_rows(d, root)[0]
+            entry = next(e for e in row["stale_in"] if e["audience"] == "human")
+            self.assertEqual(
+                (row["id"], entry["path"], entry["text"]), (1, "CONTRIBUTING.md", HUMAN)
+            )
+
+
+class AppliedRewordedTests(unittest.TestCase):
+    """R15: a reworded removal whose new wording is already in place is not reported again."""
+
+    def test_applied_reworded_removal_is_not_reported(self):
+        with scratch() as d:
+            write_rule(
+                d,
+                ["human", "agent"],
+                {"human": NEW_HUMAN, "agent": AGENT},
+                {"human": HUMAN, "agent": AGENT},
+            )
+            root = Path(d) / "docs"
+            root.mkdir()
+            (root / "CONTRIBUTING.md").write_text(f"Intro.\n\n{NEW_HUMAN}\n", encoding="utf-8")
+            (root / "CLAUDE.md").write_text(f"{AGENT}\n", encoding="utf-8")
+            (root / ".claude" / "rules").mkdir(parents=True)
+            (root / ".claude" / "rules" / "001.md").write_text(AGENT + "\n", encoding="utf-8")
+            row = sync_rows(d, root)[0]
+            self.assertEqual(row["stale_in"], [])
+            self.assertTrue(row["changed"])
+            self.assertEqual(row["pending"], [])
+
+    def test_reworded_removal_with_old_text_still_present_is_kept(self):
+        with scratch() as d:
+            write_rule(
+                d,
+                ["human"],
+                {"human": NEW_HUMAN},
+                {"human": HUMAN},
+            )
+            root = Path(d) / "docs"
+            root.mkdir()
+            (root / "CONTRIBUTING.md").write_text(f"{HUMAN}\n", encoding="utf-8")
+            row = sync_rows(d, root)[0]
+            self.assertEqual([e["status"] for e in row["stale_in"]], ["found"])
+            self.assertEqual(row["pending"][0]["path"], "CONTRIBUTING.md")
+
+    def test_unapplied_reworded_removal_with_new_text_absent_is_not_found_and_kept(self):
+        with scratch() as d:
+            write_rule(d, ["human"], {"human": NEW_HUMAN}, {"human": HUMAN})
+            root = Path(d) / "docs"
+            root.mkdir()
+            (root / "CONTRIBUTING.md").write_text("Hand-edited text.\n", encoding="utf-8")
+            row = sync_rows(d, root)[0]
+            self.assertEqual([e["status"] for e in row["stale_in"]], ["not_found"])
+
+
+class HeldFileTests(unittest.TestCase):
+    """FR-002 and the Assumptions: a hand-edited agent-only file is held, never overwritten."""
+
+    NEW_AGENT = "Never leak secrets to CI output."
+
+    def agent_file(self, d, root, text):
+        rules = root / ".claude" / "rules"
+        rules.mkdir(parents=True, exist_ok=True)
+        path = rules / "001.md"
+        path.write_text(text, encoding="utf-8")
+        return path
+
+    def test_hand_edited_agent_file_is_held_not_pending(self):
+        with scratch() as d:
+            write_rule(d, ["agent"], {"agent": AGENT}, {})
+            root = Path(d) / "docs"
+            root.mkdir()
+            path = self.agent_file(d, root, "Hand-written paragraph.\n")
+            row = sync_rows(d, root)[0]
+            self.assertEqual(
+                row["held"], [{"path": ".claude/rules/001.md", "audience": "agent", "kind": "file"}]
+            )
+            self.assertNotIn(".claude/rules/001.md", [e["path"] for e in row["pending"]])
+            self.assertEqual(path.read_text(encoding="utf-8"), "Hand-written paragraph.\n")
+
+    def test_agent_file_with_exact_wording_is_neither_held_nor_pending(self):
+        with scratch() as d:
+            write_rule(d, ["agent"], {"agent": AGENT}, {})
+            root = Path(d) / "docs"
+            root.mkdir()
+            self.agent_file(d, root, AGENT + "\n")
+            (root / "CLAUDE.md").write_text(AGENT + "\n", encoding="utf-8")
+            row = sync_rows(d, root)[0]
+            self.assertEqual(row["held"], [])
+            self.assertEqual(row["pending"], [])
+
+    def test_reworded_file_still_holding_last_written_wording_is_overwritten_not_held(self):
+        with scratch() as d:
+            write_rule(d, ["agent"], {"agent": self.NEW_AGENT}, {"agent": AGENT})
+            root = Path(d) / "docs"
+            root.mkdir()
+            self.agent_file(d, root, AGENT + "\n")
+            row = sync_rows(d, root)[0]
+            self.assertEqual(row["held"], [])
+            self.assertIn(".claude/rules/001.md", [e["path"] for e in row["pending"]])
+
+    def test_reworded_file_with_hand_edits_is_held(self):
+        with scratch() as d:
+            write_rule(d, ["agent"], {"agent": self.NEW_AGENT}, {"agent": AGENT})
+            root = Path(d) / "docs"
+            root.mkdir()
+            path = self.agent_file(d, root, "Someone rewrote this by hand.\n")
+            row = sync_rows(d, root)[0]
+            self.assertEqual([e["path"] for e in row["held"]], [".claude/rules/001.md"])
+            self.assertNotIn(".claude/rules/001.md", [e["path"] for e in row["pending"]])
+            self.assertEqual(path.read_text(encoding="utf-8"), "Someone rewrote this by hand.\n")
+
+
+class EmptiedDocChangedTests(unittest.TestCase):
+    """FR-003 and FR-008: a recorded rule whose derived doc lost its wording is changed, not skipped."""
+
+    def test_emptied_doc_reads_changed_with_pending_addition(self):
+        with scratch() as d:
+            write(d, 1, "human, agent")
+            wording = {
+                "human": "Rule 1 MUST hold for human.",
+                "agent": "Rule 1 MUST hold for agent.",
+            }
+            settle_docs(d, wording)
+            self.assertEqual(
+                run(RECORD, "--root", str(d), "--dir", str(Path(d) / "rule"), "001")[0], 0
+            )
+            self.assertFalse(sync_rows(d, Path(d))[0]["changed"])
+            (Path(d) / "CONTRIBUTING.md").write_text("", encoding="utf-8")
+            row = sync_rows(d, Path(d))[0]
+            self.assertTrue(row["changed"])
+            self.assertIn("CONTRIBUTING.md", [e["path"] for e in row["pending"]])
+
+    def test_restored_doc_reads_unchanged_again(self):
+        with scratch() as d:
+            write(d, 1, "human, agent")
+            wording = {
+                "human": "Rule 1 MUST hold for human.",
+                "agent": "Rule 1 MUST hold for agent.",
+            }
+            settle_docs(d, wording)
+            run(RECORD, "--root", str(d), "--dir", str(Path(d) / "rule"), "001")
+            (Path(d) / "CONTRIBUTING.md").write_text("", encoding="utf-8")
+            settle_docs(d, wording)
+            row = sync_rows(d, Path(d))[0]
+            self.assertFalse(row["changed"])
+            self.assertEqual(row["pending"], [])
 
 
 if __name__ == "__main__":

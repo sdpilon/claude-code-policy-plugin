@@ -24,3 +24,16 @@ def scratch():
 
 def load(stdout):
     return json.loads(stdout)
+
+
+def settle_docs(root, wording, rule_id=1):
+    """Write derived docs the way a sync leaves them: each holds its audience's wording (R14)."""
+    root = Path(root)
+    if "human" in wording:
+        (root / "CONTRIBUTING.md").write_text(wording["human"] + "\n", encoding="utf-8")
+    if "agent" in wording:
+        (root / "CLAUDE.md").write_text(wording["agent"] + "\n", encoding="utf-8")
+        (root / ".claude" / "rules").mkdir(parents=True, exist_ok=True)
+        (root / ".claude" / "rules" / f"{rule_id:03d}.md").write_text(
+            wording["agent"] + "\n", encoding="utf-8"
+        )
