@@ -110,10 +110,12 @@ Each skill and the README also state the fallback: if the variable is not set in
 that runs a script, the plugin root is the folder two levels above the skill's base directory.
 `scripts/plugin_root.py` is not needed.
 
-**Not verified here**: that the harness substitutes the variable inside SKILL.md text, as
-opposed to exposing it only to executed scripts. The fallback covers that case. A check
-against a real session would settle it, and it is worth doing before relying on the variable
-alone.
+**Verified (2026-10-04, fresh session with `claude --plugin-dir`)**: `/policy:status` ran the
+script at an absolute path, even though `skills/status/SKILL.md` contains only
+`${CLAUDE_PLUGIN_ROOT}` and no skill file contains an absolute path. `echo $CLAUDE_PLUGIN_ROOT`
+in the session's shell printed an empty value. So the harness substitutes the variable in
+SKILL.md text when the skill loads. The shell does not need the variable set. The two-levels-up
+fallback in the skills and README is kept as a safety net, not as the primary route.
 
 **Alternatives considered**: a `scripts/plugin_root.py` that walks up from its own path. It
 would need a fixed relative path to start, which is the problem FR-017 describes, so it would
