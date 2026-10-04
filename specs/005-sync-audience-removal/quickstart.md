@@ -68,7 +68,7 @@ Start from Setup, run Scenario 1's edit, then delete `CONTRIBUTING.md`.
 
 ## Scenario 6: missing wording
 
-From Setup, remove only the `agent` line under `wording:` in `.policy/rule/001.md`. The `synced_wording:` entry also has an `agent:` line, so delete just the first match. Then run sync:
+From Setup, remove only the `agent` line under `wording:` in `.policy/rule/001.md`. The `synced_wording:` entry also has an `agent:` line, so delete just the first match. The `wording:` entry comes first in the file, so the first match is the one to remove. Then run sync:
 
 ```sh
 awk 'BEGIN{d=0} /^  agent: / && !d {d=1; next} {print}' .policy/rule/001.md > t && mv t .policy/rule/001.md
@@ -109,13 +109,29 @@ printf 'Never print secrets to CI output.\n' > .claude/rules/001.md
 python3 $PLUGIN/skills/sync/scripts/sync_status.py --dir .policy/rule --root .
 ```
 
-**Pass condition**: `stale_in` has `.claude/rules/001.md` with `kind: "file"`, `reason: "dropped"`, and `status: "found"`. If the file is then edited by hand, its status is `not_found` and `pending` is empty.
+To check the hand-edited case, overwrite the file with other text, then run sync again:
+
+```sh
+printf 'Someone hand-edited this.\n' > .claude/rules/001.md
+python3 $PLUGIN/skills/sync/scripts/sync_status.py --dir .policy/rule --root .
+```
+
+**Pass condition**: `stale_in` includes `.claude/rules/001.md` with `kind: "file"`, `reason: "dropped"`, and `status: "found"` (`CLAUDE.md` may also be listed, since the agent audience was dropped). After the hand edit, that file's status is `not_found` and `pending` is empty.
 
 ## Scenario 10: statement change needs the review flag
 
 ```sh
 python3 $PLUGIN/skills/edit/scripts/edit_rule.py --dir .policy/rule \
   --set statement="Secrets MUST NOT appear in build logs." 001
+```
+
+To preview the wording review, then write the statement with the flag:
+
+```sh
+python3 $PLUGIN/skills/edit/scripts/edit_rule.py --dir .policy/rule \
+  --set statement="Secrets MUST NOT appear in build logs." --preview 001
+python3 $PLUGIN/skills/edit/scripts/edit_rule.py --dir .policy/rule \
+  --set statement="Secrets MUST NOT appear in build logs." --reviewed-wording 001
 ```
 
 **Pass condition**: exit `2`, the message asks for `--reviewed-wording`, and the file is unchanged. With `--reviewed-wording` added, the statement is written: `grep -n 'build logs' .policy/rule/001.md` matches the body line `**001**:`, because the statement lives in the body, not in a `statement` key. `--preview` without the flag prints a `review wording.<audience>` line for each audience.

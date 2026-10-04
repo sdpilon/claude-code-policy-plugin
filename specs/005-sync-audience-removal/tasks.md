@@ -259,3 +259,12 @@
 - [X] T076 In `specs/005-sync-audience-removal/quickstart.md` Scenario 2, give the command that removes the exact sentence, for example `printf '' > CONTRIBUTING.md` (quickstart defect 2)
 - [X] T077 In `specs/005-sync-audience-removal/quickstart.md` Scenario 9, state the pass condition for a hand-edited file as "`pending` is empty and `status` is `not_found`", instead of "no deletion is proposed" (quickstart defect 3)
 - [X] T078 In `specs/005-sync-audience-removal/quickstart.md` Setup, say that `$D` and `$PLUGIN` must be set in the same shell as each scenario, or that each scenario should run as one script with absolute paths, since a sandboxed shell does not keep `cd` or variables between commands (quickstart defect 4)
+
+## Phase 17: Quickstart fixes (third hand run)
+
+**Purpose**: Quickstart wording defects found by a fresh hand run of Scenarios 1 to 10 on commit fefcfdb; the product behaved as specified
+
+- [X] T079 In `specs/005-sync-audience-removal/quickstart.md` Scenario 9, say that `stale_in` includes `.claude/rules/001.md` and may also list `CLAUDE.md`, since the agent audience was dropped, so a reader does not treat the extra entry as a failure (quickstart defect 1)
+- [X] T080 In `specs/005-sync-audience-removal/quickstart.md` Scenario 9, add the hand-edit as a run step, `printf 'Someone hand-edited this.\n' > .claude/rules/001.md`, before the sync that checks the `not_found` status and empty `pending` (quickstart defect 2)
+- [X] T081 In `specs/005-sync-audience-removal/quickstart.md` Scenario 10, add the two commands the pass condition describes: `edit_rule.py --dir .policy/rule --set statement="..." --preview 001` and the same with `--reviewed-wording 001` (quickstart defect 3)
+- [X] T082 In `specs/005-sync-audience-removal/quickstart.md` Scenario 6, state that the `awk` removes the first `agent:` match, which is the `wording:` entry because it comes first in the file (quickstart defect 4)
