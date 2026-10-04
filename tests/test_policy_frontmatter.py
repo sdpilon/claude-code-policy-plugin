@@ -84,5 +84,30 @@ class ValidateTests(unittest.TestCase):
         self.assertTrue(any("reason" in e for e in errors))
 
 
+class ValidateStatementTests(unittest.TestCase):
+    def test_one_sentence_one_modal_is_valid(self):
+        self.assertEqual(fm.validate_statement("Secrets MUST NOT appear in CI logs."), [])
+
+    def test_each_modal_form_is_accepted(self):
+        for text in ("Builds MUST pass.", "Builds SHOULD pass.", "Builds MAY skip lint."):
+            with self.subTest(text=text):
+                self.assertEqual(fm.validate_statement(text), [])
+
+    def test_two_modal_verbs_fail(self):
+        problems = fm.validate_statement("Builds MUST pass and MAY skip lint.")
+        self.assertTrue(any("modal" in p for p in problems))
+
+    def test_no_modal_verb_fails(self):
+        problems = fm.validate_statement("Builds pass.")
+        self.assertTrue(any("modal" in p for p in problems))
+
+    def test_two_sentences_fail(self):
+        problems = fm.validate_statement("Builds MUST pass. Releases MUST be tagged.")
+        self.assertTrue(any("one sentence" in p for p in problems))
+
+    def test_empty_statement_fails(self):
+        self.assertTrue(fm.validate_statement("   "))
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -27,8 +27,8 @@ modules in `scripts/`, tests in `tests/`.
 
 **⚠️ CRITICAL**: no user story work may begin until this phase is complete.
 
-- [ ] T001 Add `validate_statement(text) -> list[str]` to `scripts/policy_frontmatter.py`: one sentence, exactly one modal verb (MUST, SHOULD, MUST NOT, MAY). Add unit cases to `tests/test_policy_frontmatter.py`.
-- [ ] T002 Switch the statement check in `skills/add/scripts/add_rule.py` to call `validate_statement`. `tests/test_add_rule.py` must still pass unchanged.
+- [X] T001 Add `validate_statement(text) -> list[str]` to `scripts/policy_frontmatter.py`: one sentence, exactly one modal verb (MUST, SHOULD, MUST NOT, MAY). Add unit cases to `tests/test_policy_frontmatter.py`.
+- [X] T002 Switch the statement check in `skills/add/scripts/add_rule.py` to call `validate_statement`. `tests/test_add_rule.py` must still pass unchanged.
 
 **Checkpoint**: shared statement check in place; `add` behavior unchanged.
 
@@ -44,12 +44,12 @@ modules in `scripts/`, tests in `tests/`.
 
 > **Write these first and confirm they FAIL before T005.**
 
-- [ ] T003 [P] [US1] Write `tests/test_record_sync.py`: records the hash for named rules; a second run leaves files byte-identical; an unknown ID exits 2 and writes nothing; body and other frontmatter fields are unchanged byte for byte.
+- [X] T003 [P] [US1] Write `tests/test_record_sync.py`: records the hash for named rules; a second run leaves files byte-identical; an unknown ID exits 2 and writes nothing; body and other frontmatter fields are unchanged byte for byte.
 
 ### Implementation for User Story 1
 
-- [ ] T004 [US1] Implement `skills/sync/scripts/record_sync.py` per `specs/003-policy-plugin-gaps/contracts/record_sync.md`. Reuse `content_hash` from `skills/sync/scripts/sync_status.py` and `atomic_write_bytes` from `scripts/policy_manifest.py`.
-- [ ] T005 [US1] Replace the manual `synced_hash` write-back in step 6 of `skills/sync/SKILL.md` with a call to `record_sync.py` (FR-019).
+- [X] T004 [US1] Implement `skills/sync/scripts/record_sync.py` per `specs/003-policy-plugin-gaps/contracts/record_sync.md`. Reuse `content_hash` from `skills/sync/scripts/sync_status.py` and `atomic_write_bytes` from `scripts/policy_manifest.py`.
+- [X] T005 [US1] Replace the manual `synced_hash` write-back in step 6 of `skills/sync/SKILL.md` with a call to `record_sync.py` (FR-019).
 
 **Checkpoint**: US1 works alone. A sync can be recorded with one command.
 

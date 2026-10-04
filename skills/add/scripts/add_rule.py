@@ -48,6 +48,9 @@ def main(argv):
         fail(f"--verification-method must be one of: {', '.join(METHODS)}")
     if not args.title.strip() or not args.statement.strip():
         fail("--title and --statement must be non-empty")
+    statement_problems = fm.validate_statement(args.statement)
+    if statement_problems:
+        fail("; ".join(statement_problems))
 
     policy_dir = Path(args.policy_dir)
     rule_root = policy_dir / "rule"

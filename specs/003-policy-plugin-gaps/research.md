@@ -57,6 +57,7 @@ is what FR-013 requires. Several rules sharing one check produce one issue, whic
 correct result: the same check failing twice is one problem.
 
 **Alternatives considered**:
+
 - Rule ID. Rejected: the spec and the audit contract both forbid it.
 - A new `uid` frontmatter field. Rejected: it adds a required schema field for a problem the
   check name already solves. Revisit if two rules must track one check independently.
