@@ -98,12 +98,33 @@ def resolve(raw, rule_dir):
     return path
 
 
+def parse_expect(raw_items, ids_given):
+    """Map rule ID to the hash it had when proposed. Each --expect must name a rule being recorded."""
+    expected = {}
+    for item in raw_items:
+        raw_id, sep, digest = item.partition("=")
+        if not sep or not raw_id.isdigit() or not digest:
+            fail(f"--expect expects ID=HASH, got {item!r}")
+        if raw_id not in ids_given:
+            fail(f"--expect names rule {raw_id}, which is not being recorded")
+        expected[int(raw_id)] = digest
+    return expected
+
+
 def main(argv):
     p = argparse.ArgumentParser(prog="record_sync.py")
     p.add_argument("--dir", default=".policy/rule")
+    p.add_argument(
+        "--expect",
+        action="append",
+        default=[],
+        metavar="ID=HASH",
+        help="content hash the rule had when it was proposed; recording is refused if it changed",
+    )
     p.add_argument("ids", nargs="+", metavar="ID")
     args = p.parse_args(argv)
     rule_dir = Path(args.dir)
+    expected = parse_expect(args.expect, args.ids)
 
     # Phase 1: resolve and compute every change before any write.
     plan = []
@@ -112,9 +133,15 @@ def main(argv):
         current = path.read_text(encoding="utf-8")
         try:
             fields = fm.parse(current)
-            updated = with_synced_hash(current, content_hash(current), synced_wording_for(fields))
+            digest = content_hash(current)
+            updated = with_synced_hash(current, digest, synced_wording_for(fields))
         except (ValueError, fm.FrontmatterError) as e:
             fail(f"rule {raw}: {e}")
+        if int(raw) in expected and expected[int(raw)] != digest:
+            fail(
+                f"rule {raw} changed since it was proposed; nothing was written. Re-run sync.",
+                code=1,
+            )
         plan.append((raw, path, current, updated))
 
     # Phase 2: write only the rules that changed, under the rule-directory lock, and only if

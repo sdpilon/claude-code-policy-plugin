@@ -165,6 +165,26 @@ class StaleTransitionTests(unittest.TestCase):
                 self.assertTrue(stale_audiences.isdisjoint(set(new)))
 
 
+class MalformedRuleTests(unittest.TestCase):
+    def test_invalid_audience_gets_no_stale_or_missing_entries(self):
+        with scratch() as d:
+            write_rule(d, ["robot"], {"human": HUMAN}, {"human": HUMAN, "agent": AGENT})
+            root = Path(d) / "docs"
+            root.mkdir()
+            (root / "CONTRIBUTING.md").write_text(HUMAN + "\n", encoding="utf-8")
+            row = sync_rows(d, root)[0]
+            self.assertIn("error", row)
+            self.assertTrue(row["changed"])
+            self.assertEqual(row["stale_in"], [])
+
+    def test_missing_wording_is_still_reported_for_a_malformed_rule(self):
+        with scratch() as d:
+            write_rule(d, ["human", "agent"], {"human": HUMAN}, {})
+            row = sync_rows(d, Path(d))[0]
+            self.assertIn("error", row)
+            self.assertEqual(row["missing_wording"], ["agent"])
+
+
 class StaleStatusTests(unittest.TestCase):
     def dropped_human(self, d, contributing=None, claude=None):
         """Rule 001 moved from [human, agent] to [agent]; the human text is in CONTRIBUTING.md."""
@@ -255,6 +275,33 @@ class StaleStatusTests(unittest.TestCase):
             row = sync_rows(d, Path(d))[0]
             self.assertEqual(row["missing_wording"], ["agent"])
             self.assertTrue(row["changed"])
+
+
+RECORD = "skills/sync/scripts/record_sync.py"
+EDIT = "skills/edit/scripts/edit_rule.py"
+
+
+class AudienceChangeRecordTests(unittest.TestCase):
+    """FR-003 and plan decision R8: an audience change reads as changed, and a recorded rule does not."""
+
+    def test_audience_change_after_record_reads_changed(self):
+        with scratch() as d:
+            write(d, 1, "human, agent")
+            rule_dir = Path(d) / "rule"
+            self.assertEqual(run(RECORD, "--dir", str(rule_dir), "001")[0], 0)
+            self.assertFalse(sync_rows(d, Path(d))[0]["changed"])
+            code, out, _ = run(EDIT, "--dir", str(rule_dir), "--set", "audience=agent", "001")
+            self.assertEqual(code, 0, out)
+            row = sync_rows(d, Path(d))[0]
+            self.assertTrue(row["changed"])
+            self.assertEqual(row["targets"], ["CLAUDE.md", ".claude/rules/001.md"])
+
+    def test_recorded_rule_with_no_audience_change_reads_unchanged(self):
+        with scratch() as d:
+            write(d, 1, "human, agent")
+            rule_dir = Path(d) / "rule"
+            self.assertEqual(run(RECORD, "--dir", str(rule_dir), "001")[0], 0)
+            self.assertFalse(sync_rows(d, Path(d))[0]["changed"])
 
 
 if __name__ == "__main__":

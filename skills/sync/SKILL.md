@@ -29,7 +29,8 @@ written for each audience, so an audience that is later dropped can be found and
    wording for an active audience. Report it as a defect and propose nothing for that audience
    until someone adds the wording with `/policy:edit`.
 4. **Propose, don't apply.** For each changed rule, draft the change for each item, and show the
-   full proposal: the file, the old and new text, the rule ID it comes from, and the position.
+   full proposal: the file, the old and new text, the rule ID it comes from, the position, and the
+   rule's `current_hash` as `sync_status` reported it.
    - **Removals** come from `stale_in`, one entry per dropped audience location. Propose a removal
      only when `status` is `"found"`. Show the matched `text` and the one adjoining newline or
      space that goes with it, so no blank gap is left. Never propose a removal for `not_found`,
@@ -43,10 +44,14 @@ written for each audience, so an audience that is later dropped can be found and
 5. **Wait for approval** (Constitution Principle III). Re-check the target files are unchanged
    since you read them before applying anything. Before applying each approved removal or
    addition, re-read its target document. If the document changed since the proposal, stop for
-   that item and ask again (FR-005).
+   that item and ask again (FR-005). Re-run `sync_status` and compare each approved rule's
+   `current_hash` with the one in its proposal. If a rule's source changed since the proposal,
+   stop for that rule and propose again, because the approval was for different text.
 6. **Apply and record.** After approval, make the edits. Then record the rules you applied with
    `python3 ${CLAUDE_PLUGIN_ROOT}/skills/sync/scripts/record_sync.py <ID> [<ID> ...]`, passing only
-   the IDs that were approved and applied. The script writes each rule's `synced_hash` and
+   the IDs that were approved and applied, and pass each one's proposed hash with
+   `--expect <ID>=<current_hash>`. The script refuses, and writes nothing, if a rule's source
+   changed since it was proposed. It writes each rule's `synced_hash` and
    `synced_wording` and leaves the rest of the file unchanged. Dropped audiences are pruned from
    `synced_wording`, so the next run reports those rules as unchanged. It exits 2 without writing
    anything if an ID is missing.

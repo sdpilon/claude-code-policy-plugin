@@ -154,8 +154,11 @@ def main(argv):
             or bool(stale_in)
         )
         if problems:
+            # A malformed rule gets no removal proposal (spec Edge Cases). Missing wording is still
+            # reported, since that is the defect a person must fix (quickstart Scenario 6).
             row["changed"] = True
             row["error"] = "; ".join(problems)
+            row["stale_in"] = []
         rows.append(row)
 
     rows.sort(key=lambda r: r["id"])

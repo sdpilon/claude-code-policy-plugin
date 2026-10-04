@@ -213,5 +213,40 @@ class RecordSyncWordingTests(unittest.TestCase):
             self.assertEqual(row["stale_in"], [])
 
 
+class RecordSyncExpectTests(unittest.TestCase):
+    def proposed_hash(self, rule_dir):
+        _, out, _ = run(STATUS, "--dir", str(rule_dir), "--root", str(rule_dir.parent))
+        return json.loads(out)[0]["current_hash"]
+
+    def test_records_when_source_still_matches_the_proposal(self):
+        with scratch() as d:
+            rule_dir = make_rules(d, ["001"])
+            digest = self.proposed_hash(rule_dir)
+            code, out, _ = run(RECORD, "--dir", str(rule_dir), "--expect", f"001={digest}", "001")
+            self.assertEqual(code, 0)
+            self.assertIn("recorded 001", out)
+
+    def test_refuses_and_writes_nothing_when_source_changed_after_proposal(self):
+        with scratch() as d:
+            rule_dir = make_rules(d, ["001"])
+            digest = self.proposed_hash(rule_dir)
+            path = rule_dir / "001.md"
+            path.write_text(path.read_text(encoding="utf-8").replace("CI logs", "build logs"))
+            before = path.read_bytes()
+            code, _out, err = run(
+                RECORD, "--dir", str(rule_dir), "--expect", f"001={digest}", "001"
+            )
+            self.assertEqual(code, 1)
+            self.assertIn("changed since it was proposed", err)
+            self.assertEqual(path.read_bytes(), before)
+
+    def test_expect_for_a_rule_not_being_recorded_exits_2(self):
+        with scratch() as d:
+            rule_dir = make_rules(d, ["001", "002"])
+            code, _out, err = run(RECORD, "--dir", str(rule_dir), "--expect", "002=abc", "001")
+            self.assertEqual(code, 2)
+            self.assertIn("002", err)
+
+
 if __name__ == "__main__":
     unittest.main()
