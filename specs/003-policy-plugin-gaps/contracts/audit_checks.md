@@ -61,7 +61,7 @@ Errors on stderr, prefixed `error:`.
 |---|---|
 | 0 | the run finished. Failing checks and filed issues do not change the exit code (FR-015). |
 | 2 | registry error or missing policy dir |
-| 1 | tracker error after retries (for example, `gh` not authenticated) |
+| 1 | at least one tracker error (for example, `gh` not authenticated). Each affected rule logs `error <ID> (tracker: ...)`, and every other rule is still checked. |
 
 ## Guarantees
 

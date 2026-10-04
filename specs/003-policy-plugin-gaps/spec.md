@@ -120,7 +120,7 @@ A skill author or agent reading the frontmatter parser's contract can see, witho
 - **FR-001**: The plugin MUST provide a command that writes each named rule's current computed content hash into that rule's `synced_hash` field.
 - **FR-002**: The record-sync command MUST NOT change any rule file whose `synced_hash` already matches its content.
 - **FR-003**: The record-sync command MUST fail without writing anything when a named rule does not exist.
-- **FR-004**: The plugin MUST provide an edit operation for an existing rule that updates the statement, tags, audience, or verification fields.
+- **FR-004**: The plugin MUST provide an edit operation for an existing rule that updates the statement, tags, audience, or verification fields. The title and rationale are also editable: a rule's title and rationale are part of the wording a reviewer changes, so the operation covers them too. Frontmatter identity fields (`created`, `synced_hash`) and the rule ID are not editable.
 - **FR-005**: The edit operation MUST set `modified` to the current UTC time when it changes a rule.
 - **FR-006**: The edit operation MUST reject any change that leaves the rule failing the frontmatter contract or the one-sentence, one-modal-verb rule, and MUST leave the file unchanged on rejection.
 - **FR-007**: The plugin MUST provide a bulk-change operation that applies one change to a named set of rules.

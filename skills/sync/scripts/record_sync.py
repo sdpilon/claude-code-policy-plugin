@@ -75,18 +75,39 @@ def main(argv):
             fail(f"rule {raw}: {e}")
         plan.append((raw, path, current, updated))
 
-    # Phase 2: write only the rules that changed.
+    # Phase 2: write only the rules that changed, and only if they still match what was read.
     for raw, path, current, updated in plan:
         if updated == current:
             print(f"unchanged {raw}")
             continue
         try:
-            manifest.atomic_write_bytes(path, updated.encode("utf-8"))
+            write_if_unchanged(path, current, updated)
+        except ChangedDuringRecord as e:
+            print(
+                f"error: rule {raw} changed while it was being recorded; re-run: {e}",
+                file=sys.stderr,
+            )
+            return 1
         except OSError as e:
             print(f"error: writing rule {raw}: {e}", file=sys.stderr)
             return 1
         print(f"recorded {raw}")
     return 0
+
+
+class ChangedDuringRecord(Exception):
+    pass
+
+
+def write_if_unchanged(path, expected, updated):
+    """Write updated only if the file still holds expected.
+
+    Narrows the window in which a concurrent edit could be lost. It is not a lock: a change
+    landing between this check and the replace is still missed.
+    """
+    if Path(path).read_text(encoding="utf-8") != expected:
+        raise ChangedDuringRecord(str(path))
+    manifest.atomic_write_bytes(path, updated.encode("utf-8"))
 
 
 if __name__ == "__main__":

@@ -4,6 +4,7 @@ from pathlib import Path
 
 from tests._cli import run, scratch
 
+REPO = Path(__file__).resolve().parent.parent
 RECORD = "skills/sync/scripts/record_sync.py"
 STATUS = "skills/sync/scripts/sync_status.py"
 
@@ -94,6 +95,45 @@ class RecordSyncTests(unittest.TestCase):
             self.assertEqual(code, 0)
             self.assertIn("recorded 001", out)
             self.assertFalse(statuses(rule_dir)["001"]["changed"])
+
+
+class ConcurrentWriteTests(unittest.TestCase):
+    """T026: a rule that changed after it was read must not be overwritten."""
+
+    @staticmethod
+    def module():
+        import importlib.util
+        import sys
+
+        scripts = REPO / "skills" / "sync" / "scripts"
+        sys.path.insert(0, str(scripts))
+        spec = importlib.util.spec_from_file_location("record_sync", scripts / "record_sync.py")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    def test_write_is_refused_when_rule_changed_after_it_was_read(self):
+        module = self.module()
+        with scratch() as d:
+            rule_dir = make_rules(d, ["001"])
+            path = rule_dir / "001.md"
+            current = path.read_text(encoding="utf-8")
+            updated = module.with_synced_hash(current, module.content_hash(current))
+            concurrent = current.replace("CI logs", "build logs")
+            path.write_text(concurrent, encoding="utf-8")
+            with self.assertRaises(module.ChangedDuringRecord):
+                module.write_if_unchanged(path, current, updated)
+            self.assertEqual(path.read_text(encoding="utf-8"), concurrent)
+
+    def test_write_proceeds_when_rule_is_unchanged(self):
+        module = self.module()
+        with scratch() as d:
+            rule_dir = make_rules(d, ["001"])
+            path = rule_dir / "001.md"
+            current = path.read_text(encoding="utf-8")
+            updated = module.with_synced_hash(current, module.content_hash(current))
+            module.write_if_unchanged(path, current, updated)
+            self.assertEqual(path.read_text(encoding="utf-8"), updated)
 
 
 if __name__ == "__main__":
