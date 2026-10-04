@@ -110,13 +110,13 @@ modules in `scripts/`, tests in `tests/`.
 
 > **Write these first and confirm they FAIL before T015.**
 
-- [ ] T013 [US4] Write `tests/test_audit_checks.py` using an in-memory fake tracker: passing check logs `pass`; failing check files one issue; unbuilt check files `Build policy check`; an open issue with the label prevents a second filing; `defect` rules are skipped; a check that raises counts as failing; a second run files nothing; a registry without `CHECKS` exits 2.
+- [X] T013 [US4] Write `tests/test_audit_checks.py` using an in-memory fake tracker: passing check logs `pass`; failing check files one issue; unbuilt check files `Build policy check`; an open issue with the label prevents a second filing; `defect` rules are skipped; a check that raises counts as failing; a second run files nothing; a registry without `CHECKS` exits 2.
 
 ### Implementation for User Story 4
 
-- [ ] T014 [P] [US4] Implement `skills/audit/scripts/github_tracker.py`: search open issues by label, and create an issue, both through `gh`. It has no close operation (FR-016).
-- [ ] T015 [US4] Implement `skills/audit/scripts/audit_checks.py` per `specs/003-policy-plugin-gaps/contracts/audit_checks.md`: load the registry, dispatch checks, stamp the label `policy-audit:<via>` and the body marker, and file through the tracker interface. Depends on T013 and T014.
-- [ ] T016 [P] [US4] Update `skills/audit/SKILL.md`: the registry contract, the tracker choice, the dedupe key, and the no-close guardrail. Different file from T015, so it can run alongside it.
+- [X] T014 [P] [US4] Implement `skills/audit/scripts/github_tracker.py`: search open issues by label, and create an issue, both through `gh`. It has no close operation (FR-016).
+- [X] T015 [US4] Implement `skills/audit/scripts/audit_checks.py` per `specs/003-policy-plugin-gaps/contracts/audit_checks.md`: load the registry, dispatch checks, stamp the label `policy-audit:<via>` and the body marker, and file through the tracker interface. Depends on T013 and T014.
+- [X] T016 [P] [US4] Update `skills/audit/SKILL.md`: the registry contract, the tracker choice, the dedupe key, and the no-close guardrail. Different file from T015, so it can run alongside it.
 
 **Checkpoint**: US4 works alone with the dry-run tracker and the fake in tests.
 
