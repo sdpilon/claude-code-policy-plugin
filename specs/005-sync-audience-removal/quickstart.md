@@ -119,4 +119,4 @@ cd / && rm -rf "$D"
 
 ## Automated coverage
 
-`python3 -m unittest tests.test_sync_status tests.test_record_sync tests.test_add_rule tests.test_edit_rule tests.test_policy_frontmatter` covers Scenarios 1 to 6 with the same fixtures. Scenarios 7 to 10 are covered once T039 and the reworded-audience tasks are implemented.
+`python3 -m unittest tests.test_sync_status tests.test_record_sync tests.test_add_rule tests.test_edit_rule tests.test_policy_frontmatter` covers Scenarios 1 to 10 with the same fixtures.

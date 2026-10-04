@@ -173,25 +173,31 @@
 
 **Purpose**: Remaining gaps found by `/speckit-converge` against spec.md, plan.md, tasks.md, and the constitution
 
-- [ ] T038 Document the `--expect ID=HASH` option of `record_sync.py` in the `record_sync.py` section of `contracts/rule_wording.md`, including its exit code 1 on a changed source, per Constitution III and T035 (partial)
+- [X] T038 Document the `--expect ID=HASH` option of `record_sync.py` in the `record_sync.py` section of `contracts/rule_wording.md`, including its exit code 1 on a changed source, per Constitution III and T035 (partial)
 
 ## Phase 8: Spec amendment (FR-012)
 
 **Purpose**: Reject an audience drop that would silently discard an unrecorded wording edit
 
-- [ ] T039 In `skills/edit/scripts/edit_rule.py`, reject an audience change that drops an audience whose `wording.<audience>` differs from its `synced_wording.<audience>`, exiting 2 with a message that names the audience and says to run sync first or revert the wording; a drop with no such difference, or for an audience never recorded, still succeeds; add tests in `tests/test_edit_rule.py` per FR-012 (missing)
-- [ ] T040 Update the guardrails in `skills/edit/SKILL.md` to describe the rejected drop and the sync-first path, per FR-012 (missing)
-- [ ] T041 Document the rejected drop in the `edit_rule.py` section of `contracts/rule_wording.md`, per FR-012 (missing)
+- [X] T039 In `skills/edit/scripts/edit_rule.py`, reject an audience change that drops an audience whose `wording.<audience>` differs from its `synced_wording.<audience>`, exiting 2 with a message that names the audience and says to run sync first or revert the wording; a drop with no such difference, or for an audience never recorded, still succeeds; add tests in `tests/test_edit_rule.py` per FR-012 (missing)
+- [X] T040 Update the guardrails in `skills/edit/SKILL.md` to describe the rejected drop and the sync-first path, per FR-012 (missing)
+- [X] T041 Document the rejected drop in the `edit_rule.py` section of `contracts/rule_wording.md`, per FR-012 (missing)
 
 ## Phase 9: Plan revision (widened spec)
 
 **Purpose**: Work added by the revised plan for the rewording, review-flag, and source re-check decisions (R9 to R13)
 
-- [ ] T042 In `skills/sync/scripts/sync_status.py`, add `stale_in` entries for audiences still targeted whose `wording` differs from `synced_wording`, with `reason: "reworded"`, matched by the same exact-once search; give the existing dropped-audience entries `reason: "dropped"`; mark the row `changed` for either reason, per FR-001, FR-002, R9, and the data-model stale location
-- [ ] T043 Add tests in `tests/test_sync_status.py` for a reworded still-targeted audience (`found`, `not_found`, `ambiguous`), the `reason` value on dropped entries, and a reworded agent-only file (`kind: "file"`), per quickstart Scenarios 7 and 9 and R9 and R12
-- [ ] T044 Update step 4 of `skills/sync/SKILL.md` so each reworded removal is proposed together with an addition of the current wording to the same doc, and a reworded agent-only file is overwritten only when its content equals the last-written wording plus a newline, per FR-002 and R12
-- [ ] T045 In `skills/edit/scripts/edit_rule.py`, require `--reviewed-wording` on any non-preview run whose `--set` list includes `statement`; without it, exit 2 and write nothing; `--preview` needs no flag, per FR-009 and R11
-- [ ] T046 Add tests in `tests/test_edit_rule.py` for the review flag: a statement change without the flag is refused with nothing written, one with the flag is written, and preview works without it, per quickstart Scenario 10 and R11
-- [ ] T047 Update `skills/edit/SKILL.md` so the skill passes `--reviewed-wording` only after the person approves each `review wording.<audience>` line, per FR-009
-- [ ] T048 Update the sync bullet in `README.md` to say that a reworded still-targeted audience gets its old text removed and the new wording added, keeping README to the current state, per the constitution's README rule
-- [ ] T049 Run quickstart Scenarios 1 to 10 in a scratch directory, and record which pass in the PR description, per quickstart and SC-001 to SC-003
+- [X] T042 In `skills/sync/scripts/sync_status.py`, add `stale_in` entries for audiences still targeted whose `wording` differs from `synced_wording`, with `reason: "reworded"`, matched by the same exact-once search; give the existing dropped-audience entries `reason: "dropped"`; mark the row `changed` for either reason, per FR-001, FR-002, R9, and the data-model stale location
+- [X] T043 Add tests in `tests/test_sync_status.py` for a reworded still-targeted audience (`found`, `not_found`, `ambiguous`), the `reason` value on dropped entries, and a reworded agent-only file (`kind: "file"`), per quickstart Scenarios 7 and 9 and R9 and R12
+- [X] T044 Update step 4 of `skills/sync/SKILL.md` so each reworded removal is proposed together with an addition of the current wording to the same doc, and a reworded agent-only file is overwritten only when its content equals the last-written wording plus a newline, per FR-002 and R12
+- [X] T045 In `skills/edit/scripts/edit_rule.py`, require `--reviewed-wording` on any non-preview run whose `--set` list includes `statement`; without it, exit 2 and write nothing; `--preview` needs no flag, per FR-009 and R11
+- [X] T046 Add tests in `tests/test_edit_rule.py` for the review flag: a statement change without the flag is refused with nothing written, one with the flag is written, and preview works without it, per quickstart Scenario 10 and R11
+- [X] T047 Update `skills/edit/SKILL.md` so the skill passes `--reviewed-wording` only after the person approves each `review wording.<audience>` line, per FR-009
+- [X] T048 Update the sync bullet in `README.md` to say that a reworded still-targeted audience gets its old text removed and the new wording added, keeping README to the current state, per the constitution's README rule
+- [X] T049 Run quickstart Scenarios 1 to 10 in a scratch directory, and record which pass in the PR description, per quickstart and SC-001 to SC-003
+
+## Phase 10: Convergence
+
+**Purpose**: Remaining gaps found by `/speckit-converge` against spec.md, plan.md, tasks.md, and the constitution
+
+- [X] T050 Update the `/policy:edit` bullet in `README.md` to say that a statement change needs `--reviewed-wording` after the person approves each audience wording, and that an audience drop is rejected while its wording has an edit sync has not recorded, per FR-009, FR-012, and the constitution's README current-state rule (partial)
