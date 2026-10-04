@@ -71,7 +71,7 @@ modules in `scripts/`, tests in `tests/`.
 
 - [X] T007 [US2] Implement the single-rule path of `skills/edit/scripts/edit_rule.py` per `specs/003-policy-plugin-gaps/contracts/edit_rule.md`. Validate with `fm.validate` and `validate_statement`, and write with `atomic_write_bytes`.
 - [X] T008 [US2] Create `skills/edit/SKILL.md`. Its description must cover rule-changing requests and exclude add, retire, and sync requests. Its body runs `--preview` first, shows the diff, and applies only after the person confirms (constitution principle III).
-- [ ] T009 [US2] Run the trigger tests from research R8 on the `edit` skill description: fresh-context subagents, positive cases ("change the statement of rule 004", "bump the audience on these three rules") and negative cases ("add a rule", "retire rule 004", "sync the docs"). Record the results in `specs/003-policy-plugin-gaps/checklists/trigger-tests.md`.
+- [X] T009 [US2] Run the trigger tests from research R8 on the `edit` skill description: fresh-context subagents, positive cases ("change the statement of rule 004", "bump the audience on these three rules") and negative cases ("add a rule", "retire rule 004", "sync the docs"). Record the results in `specs/003-policy-plugin-gaps/checklists/trigger-tests.md`.
 
 **Checkpoint**: US2 works alone. A single rule can be edited, dated, and validated.
 
