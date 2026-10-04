@@ -204,6 +204,7 @@ def build_row(text, rule_id, doc_root):
         or row["synced_hash"] != row["current_hash"]
         or bool(missing_wording)
         or bool(stale_in)
+        or bool(pending)
     )
     if problems:
         # A malformed rule gets no removal proposal (spec Edge Cases). Missing wording is still

@@ -268,3 +268,19 @@
 - [X] T080 In `specs/005-sync-audience-removal/quickstart.md` Scenario 9, add the hand-edit as a run step, `printf 'Someone hand-edited this.\n' > .claude/rules/001.md`, before the sync that checks the `not_found` status and empty `pending` (quickstart defect 2)
 - [X] T081 In `specs/005-sync-audience-removal/quickstart.md` Scenario 10, add the two commands the pass condition describes: `edit_rule.py --dir .policy/rule --set statement="..." --preview 001` and the same with `--reviewed-wording 001` (quickstart defect 3)
 - [X] T082 In `specs/005-sync-audience-removal/quickstart.md` Scenario 6, state that the `awk` removes the first `agent:` match, which is the `wording:` entry because it comes first in the file (quickstart defect 4)
+
+## Phase 18: Changed-state and quickstart gaps (hand run)
+
+**Purpose**: A rule with a pending addition reads `changed: false`, so sync would skip it, and `record_sync` refuses it. Found by the hand run of quickstart Scenarios 1 to 12 on commit 829c053; the spec's FR-003 and FR-008 require changed rules to be proposed
+
+- [X] T083 In `skills/sync/scripts/sync_status.py`, make `build_row` report `changed: true` when `pending` is non-empty, so a rule whose derived doc has lost its wording is proposed, not skipped (FR-003, FR-008; contradicts the data-model `changed` definition)
+- [X] T084 Add a test in `tests/test_sync_status.py` that a recorded rule whose `CONTRIBUTING.md` was emptied reads `changed: true` with `pending` listing `CONTRIBUTING.md`, and that a recorded rule with its wording in place reads `changed: false` (FR-003, FR-008)
+- [X] T085 Update the `changed` row in the sync-row table of `specs/005-sync-audience-removal/data-model.md` to include a non-empty `pending`, so the doc matches the code (plan Phase 1 output `data-model.md`)
+- [X] T086 In `specs/005-sync-audience-removal/quickstart.md` Scenario 2, state that it runs after Scenario 1's edit, since a fresh Setup is refused by `record_sync` with a pending addition (quickstart defect from the hand run)
+- [X] T087 Decide, and record in `specs/005-sync-audience-removal/research.md`, whether a non-empty `held` list should also make a rule `changed`; the plan keeps held files as a report only, so the default is no (plan decision R15; Assumptions on hand-edited text)
+
+## Phase 19: Convergence
+
+**Purpose**: Remaining gap found by `/speckit-converge` after Phase 18 (the `changed` definition now includes `pending`)
+
+- [X] T088 Update the `changed` guarantee in `specs/005-sync-audience-removal/contracts/sync_status.md` (line 54) to list `pending` with `stale_in` and `missing_wording`, so the contract matches `build_row`, per plan Phase 1 contract `sync_status.md` and FR-003, FR-008 (partial)

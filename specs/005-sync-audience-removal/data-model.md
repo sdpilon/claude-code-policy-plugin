@@ -35,7 +35,7 @@ One file under `.policy/rule/`.
 | `targets` | list of paths | Derived docs for current audiences (existing) |
 | `current_hash` | hex | Content hash, excluding `synced_hash` and `synced_wording` |
 | `synced_hash` | hex or null | Recorded hash (existing) |
-| `changed` | bool | True when the hash differs, the rule is invalid, or `missing_wording` or `stale_in` is non-empty |
+| `changed` | bool | True when the hash differs, the rule is invalid, or `missing_wording`, `stale_in`, or `pending` is non-empty |
 | `error` | string | Present only for invalid or unparseable rules (existing) |
 | `missing_wording` | list of audiences | **New.** Active audiences with no `wording` entry. Empty when none. |
 | `stale_in` | list of stale locations | **New.** Locations for audiences dropped since the last record, or reworded while still targeted. Empty when none, and always empty for an invalid rule. |

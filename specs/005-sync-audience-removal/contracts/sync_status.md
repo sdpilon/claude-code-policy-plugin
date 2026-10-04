@@ -51,7 +51,7 @@ A JSON array, one row per rule, sorted by `id`. Existing fields are unchanged. N
 - A `reworded` stale entry with `status: "not_found"` is omitted from `stale_in` when the current `wording` for that audience is present exactly once in the same doc (R15).
 - `held` lists each existing agent-only file `.claude/rules/<id>.md` whose content is neither the current `wording` plus a newline nor the last-written wording plus a newline (`path`, `audience`, `kind: "file"`). It is never proposed for overwrite and is reported by path and rule ID (FR-002, Assumptions).
 - The content hash ignores `synced_hash` and `synced_wording`, so recording does not make a rule read as changed.
-- A rule with `changed: true` because of `stale_in` or `missing_wording` is reported as changed, whether or not the stale text is found.
+- A rule with `changed: true` because of `stale_in`, `missing_wording`, or `pending` is reported as changed, whether or not the stale text is found.
 - Output is deterministic for the same files.
 
 ## Error behavior

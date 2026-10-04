@@ -67,7 +67,8 @@ class SyncStatusTests(unittest.TestCase):
             path = write(d, 1, "agent")
             digest = sync_status.content_hash(path.read_text())
             path.write_text(rule_text("t1", "agent", 1, f"synced_hash: {digest}\n"))
-            row = load(run(SYNC, "--dir", str(Path(d) / "rule"))[1])[0]
+            settle_docs(d, {"agent": "Rule 1 MUST hold for agent."})
+            row = load(run(SYNC, "--dir", str(Path(d) / "rule"), "--root", str(d))[1])[0]
             self.assertFalse(row["changed"])
 
     def test_content_change_after_sync_is_detected(self):
@@ -554,6 +555,42 @@ class HeldFileTests(unittest.TestCase):
             self.assertEqual([e["path"] for e in row["held"]], [".claude/rules/001.md"])
             self.assertNotIn(".claude/rules/001.md", [e["path"] for e in row["pending"]])
             self.assertEqual(path.read_text(encoding="utf-8"), "Someone rewrote this by hand.\n")
+
+
+class EmptiedDocChangedTests(unittest.TestCase):
+    """FR-003 and FR-008: a recorded rule whose derived doc lost its wording is changed, not skipped."""
+
+    def test_emptied_doc_reads_changed_with_pending_addition(self):
+        with scratch() as d:
+            write(d, 1, "human, agent")
+            wording = {
+                "human": "Rule 1 MUST hold for human.",
+                "agent": "Rule 1 MUST hold for agent.",
+            }
+            settle_docs(d, wording)
+            self.assertEqual(
+                run(RECORD, "--root", str(d), "--dir", str(Path(d) / "rule"), "001")[0], 0
+            )
+            self.assertFalse(sync_rows(d, Path(d))[0]["changed"])
+            (Path(d) / "CONTRIBUTING.md").write_text("", encoding="utf-8")
+            row = sync_rows(d, Path(d))[0]
+            self.assertTrue(row["changed"])
+            self.assertIn("CONTRIBUTING.md", [e["path"] for e in row["pending"]])
+
+    def test_restored_doc_reads_unchanged_again(self):
+        with scratch() as d:
+            write(d, 1, "human, agent")
+            wording = {
+                "human": "Rule 1 MUST hold for human.",
+                "agent": "Rule 1 MUST hold for agent.",
+            }
+            settle_docs(d, wording)
+            run(RECORD, "--root", str(d), "--dir", str(Path(d) / "rule"), "001")
+            (Path(d) / "CONTRIBUTING.md").write_text("", encoding="utf-8")
+            settle_docs(d, wording)
+            row = sync_rows(d, Path(d))[0]
+            self.assertFalse(row["changed"])
+            self.assertEqual(row["pending"], [])
 
 
 if __name__ == "__main__":

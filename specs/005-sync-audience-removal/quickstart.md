@@ -38,7 +38,7 @@ python3 $PLUGIN/skills/sync/scripts/sync_status.py --dir .policy/rule --root .
 
 ## Scenario 2: approve, remove, record
 
-Empty `CONTRIBUTING.md` to remove the exact sentence, then record and run again:
+From Scenario 1 (run its edit first), empty `CONTRIBUTING.md` to remove the exact sentence, then record and run again:
 
 ```sh
 printf '' > CONTRIBUTING.md

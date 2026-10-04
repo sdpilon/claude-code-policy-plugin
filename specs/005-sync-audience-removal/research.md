@@ -115,3 +115,4 @@ No NEEDS CLARIFICATION markers remain. The clarifications of 2026-10-04 settled 
 
 - `stale_in` entries have a `reason` field (`dropped` or `reworded`), added by R9.
 - Rules still reported as `missing_wording` when they fail validation (Scenario 6). Unparseable rules report nothing (contract `sync_status.md`, error behavior).
+- A non-empty `held` list does not make a rule `changed`. Held files are reported on every run by the sync skill's step 2 instead, so a rule with only a hand-edited agent file stays unchanged and is not re-proposed (Phase 18 decision, T087).
