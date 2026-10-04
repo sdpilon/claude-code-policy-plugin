@@ -64,6 +64,9 @@ generalized to drop riposte-specific content.
 - **Statements.** Each rule is one sentence with one modal verb (MUST, SHOULD,
   MUST NOT, or MAY), and carries its own short rationale. Related rules cross-link by
   number instead of sharing rationale text.
+- **Write lock.** Rule writes from `record_sync` and `edit` hold an advisory lock,
+  `.policy/rule/.write.lock`, so concurrent writes can't interleave. Add the file to `.gitignore`
+  if you don't want it tracked. It is advisory: tools that write rule files directly bypass it.
 - **Derived docs** are outputs, never sources. Edit the rule, then sync.
 - **Manifest.** `.policy/manifest.json` records what the plugin wrote into `.policy/`: each
   tracked file's content fingerprint and the plugin version that shipped it. Only files
