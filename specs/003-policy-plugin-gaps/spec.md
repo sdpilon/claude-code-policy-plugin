@@ -8,7 +8,7 @@
 
 **Input**: User description: "Close the gaps that the riposte migration session hit in the policy plugin, excluding anything about migration: a command that writes synced_hash back after a sync, an edit path that refreshes modified and synced_hash together, a bulk-edit path, a runnable audit script that files and dedupes issues for ci-checked rules, plugin path discovery, and documentation of the frontmatter parse return type. Migration is out of scope; it is removed in a later spec."
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Record a sync without hand-written hashes (Priority: P1)
 
@@ -113,7 +113,7 @@ A skill author or agent reading the frontmatter parser's contract can see, witho
 - An issue exists with the dedupe key but is closed: the audit files a new one only if the rule still fails.
 - A rule's ID is retired between preview and apply of a bulk change: the apply fails for the whole set.
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -145,7 +145,7 @@ A skill author or agent reading the frontmatter parser's contract can see, witho
 - **Check registry**: The consuming project's mapping from a `verification.via` name to the check that verifies it.
 - **Audit issue**: An issue the audit files, identified by a dedupe key that survives title and ID changes.
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 
