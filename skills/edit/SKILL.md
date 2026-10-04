@@ -48,6 +48,20 @@ Run from the repository root. `<plugin>` is the plugin's root directory, the fol
 5. **Tell the person what comes next.** An edited rule now reads as changed in the sync status
    until its derived docs are synced. Say so, and offer to run the sync skill.
 
+## Changing several rules at once
+
+Pass several IDs and the same `--set` values apply to each. The run is all-or-none:
+
+- If any rule fails validation, the command writes nothing, prints one `rejected` line per
+  failing rule, and exits 2. Fix the failing rules, then preview again.
+- If a write fails partway through (for example, a full disk), the command puts back the rules
+  it had already written, from their original text, and prints `restored <IDs>` on stderr.
+  If a restore also fails, it prints `could not restore <ID>`. Check those rules by hand.
+- Preview prints each rule's change, so review the whole batch before applying.
+
+Use a bulk edit for one change repeated across rules. For different changes per rule, run one
+edit per rule.
+
 ## Guardrails
 
 - Never edit a rule file by hand, and never edit `synced_hash`.
