@@ -142,8 +142,8 @@ modules in `scripts/`, tests in `tests/`.
 
 **Independent Test**: a reader with only the contract doc states the return type and error for a file with no frontmatter (quickstart scenario 5).
 
-- [ ] T020 [P] [US6] Document `parse()` in `specs/001-rule-per-file-restructure/contracts/policy_frontmatter.md`: returns a `dict` of `str` keys; values are `str`, `list`, or a nested dict of scalars; no frontmatter block raises `FrontmatterError`; an empty value is `""` or `[]`.
-- [ ] T021 [US6] Update the `parse()` docstring in `scripts/policy_frontmatter.py` to match T020. It touches the same file as T001, so it runs after T001.
+- [X] T020 [P] [US6] Document `parse()` in `specs/001-rule-per-file-restructure/contracts/policy_frontmatter.md`: returns a `dict` of `str` keys; values are `str`, `list`, or a nested dict of scalars; no frontmatter block raises `FrontmatterError`; an empty value is `""` or `[]`.
+- [X] T021 [US6] Update the `parse()` docstring in `scripts/policy_frontmatter.py` to match T020. It touches the same file as T001, so it runs after T001.
 
 **Checkpoint**: US6 works alone. The documented behavior matches the code.
 
