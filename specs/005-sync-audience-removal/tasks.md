@@ -242,3 +242,11 @@
 - [X] T069 Add `held` to the output contract in `specs/005-sync-audience-removal/contracts/sync_status.md`: its meaning, its entry shape, that it is never proposed for overwrite, and that the "New fields" sentence names `pending` and `held` as well as `missing_wording` and `stale_in`, per plan Phase 1 contract `sync_status.md` and Assumptions (partial)
 - [X] T070 Add the `pending` and `held` row fields to the sync-row table in `specs/005-sync-audience-removal/data-model.md`, per plan Phase 1 output `data-model.md` (partial)
 - [X] T071 Add a quickstart scenario to `specs/005-sync-audience-removal/quickstart.md` for a hand-edited agent-only file: it appears in `held` and is not overwritten by sync, per plan Phase 1 quickstart and Assumptions (partial)
+
+## Phase 15: Quickstart fixes (hand-run defects)
+
+**Purpose**: Defects in `quickstart.md` found by a fresh hand run of Scenarios 1 to 10 on commit 4dbdfda; the product behaved as specified
+
+- [X] T072 In `specs/005-sync-audience-removal/quickstart.md` Scenario 9, replace "`.claude/rules/001.md` does not exist yet" with an instruction to overwrite it, since Setup already creates it, per quickstart accuracy (quickstart defect 1)
+- [X] T073 In `specs/005-sync-audience-removal/quickstart.md` Scenario 6, replace "delete the `agent` line under `wording:`" with a concrete command that removes only the first `agent:` line (the `wording:` entry, not the `synced_wording:` entry), e.g. the awk form the hand run verified, per quickstart accuracy (quickstart defect 2)
+- [X] T074 In `specs/005-sync-audience-removal/quickstart.md`, add a note that `$D` and `$PLUGIN` are set in Setup and reused by every scenario, so each scenario block depends on Setup (quickstart defect 3)

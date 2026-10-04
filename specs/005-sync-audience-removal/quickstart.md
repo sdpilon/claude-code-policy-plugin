@@ -24,6 +24,8 @@ python3 $PLUGIN/skills/sync/scripts/record_sync.py --dir .policy/rule 001
 
 **Pass condition**: `.policy/rule/001.md` has `synced_wording` with both audiences, and `sync_status` reports `changed: false`.
 
+Every scenario below reuses `$D` and `$PLUGIN` from Setup. Run Setup first, in the same shell, before any scenario.
+
 ## Scenario 1: audience drops `human`
 
 ```sh
@@ -65,7 +67,12 @@ Start from Setup, run Scenario 1's edit, then delete `CONTRIBUTING.md`.
 
 ## Scenario 6: missing wording
 
-From Setup, delete the `agent` line under `wording:` in `.policy/rule/001.md` by hand, then run sync.
+From Setup, remove only the `agent` line under `wording:` in `.policy/rule/001.md`. The `synced_wording:` entry also has an `agent:` line, so delete just the first match. Then run sync:
+
+```sh
+awk 'BEGIN{d=0} /^  agent: / && !d {d=1; next} {print}' .policy/rule/001.md > t && mv t .policy/rule/001.md
+python3 $PLUGIN/skills/sync/scripts/sync_status.py --dir .policy/rule --root .
+```
 
 **Pass condition**: `missing_wording` lists `agent`, and the row has an `error`.
 
@@ -94,7 +101,7 @@ python3 $PLUGIN/skills/edit/scripts/edit_rule.py --dir .policy/rule \
 
 ## Scenario 9: agent-only file
 
-From Setup, drop `agent` (`--set audience=human`). `.claude/rules/001.md` does not exist yet, so write it the way sync would, with the exact agent wording and a newline, then run sync:
+From Setup, drop `agent` (`--set audience=human`). Setup already created `.claude/rules/001.md`, so overwrite it with the exact agent wording and a newline, the way sync would, then run sync:
 
 ```sh
 printf 'Never print secrets to CI output.\n' > .claude/rules/001.md
