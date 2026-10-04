@@ -24,6 +24,7 @@ sys.path.insert(
 )
 import policy_frontmatter as fm
 import policy_ids as ids
+import policy_lock
 import policy_manifest as manifest
 
 EDITABLE = {
@@ -35,6 +36,9 @@ EDITABLE = {
     "statement",
     "rationale",
 }
+
+
+LOCK_TIMEOUT = 10.0
 
 
 def fail(message, code=2):
@@ -180,21 +184,44 @@ def main(argv):
                 print(f"  {key} -> {value}")
         return 0
 
-    # Phase 2: write only the rules that changed. If a write fails, put back the files already
-    # written, from the originals held in memory. Each restore is atomic, like the writes.
-    written = []
-    for raw, path, text, new_text in plan:
-        if new_text == text:
-            print(f"unchanged {raw}")
-            continue
-        try:
-            manifest.atomic_write_bytes(path, new_text.encode("utf-8"))
-        except OSError as e:
-            print(f"error: writing rule {raw}: {e}", file=sys.stderr)
-            restore(written)
-            return 1
-        written.append((raw, path, text))
-        print(f"changed {raw}")
+    return commit_plan(plan, rule_dir)
+
+
+def commit_plan(plan, rule_dir, timeout=None):
+    """Phase 2: write the changed rules under the rule-directory lock.
+
+    Each rule is written only if it still matches the text read in phase 1. If a write fails, or a
+    rule changed since it was read, the files already written are put back from their originals.
+    """
+    timeout = LOCK_TIMEOUT if timeout is None else timeout
+    try:
+        with policy_lock.write_lock(rule_dir, timeout=timeout):
+            written = []
+            for raw, path, text, new_text in plan:
+                if new_text == text:
+                    print(f"unchanged {raw}")
+                    continue
+                try:
+                    policy_lock.write_if_unchanged(path, text, new_text)
+                except policy_lock.ChangedDuringWrite:
+                    print(
+                        f"error: rule {raw} changed since it was read; files written earlier in this run are restored. Re-run.",
+                        file=sys.stderr,
+                    )
+                    restore(written)
+                    return 1
+                except OSError as e:
+                    print(f"error: writing rule {raw}: {e}", file=sys.stderr)
+                    restore(written)
+                    return 1
+                written.append((raw, path, text))
+                print(f"changed {raw}")
+    except policy_lock.LockTimeout as e:
+        print(
+            f"error: another policy write holds the lock ({e}); nothing was written",
+            file=sys.stderr,
+        )
+        return 1
     return 0
 
 

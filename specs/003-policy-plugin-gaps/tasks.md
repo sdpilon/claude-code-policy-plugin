@@ -225,3 +225,7 @@ Task: "T020 [P] [US6] Document parse() in specs/001-.../contracts/policy_frontma
 - [X] T026 Make `record_sync` in `skills/sync/scripts/record_sync.py` refuse to write a rule that changed between its read and its write, so a concurrent edit is not lost per Edge Cases (concurrent syncs) (partial)
 - [X] T027 Make `run_audit` in `skills/audit/scripts/audit_checks.py` keep checking the remaining rules after a tracker failure, log each failure, and exit 1 at the end per Edge Cases (tracker unavailable) (partial)
 - [X] T028 Document `title` and `rationale` as intentional `edit` fields in `specs/003-policy-plugin-gaps/spec.md` FR-004, or remove them from `skills/edit/scripts/edit_rule.py` per FR-004 (unrequested)
+
+## Phase 10: Convergence
+
+- [X] T029 Hold an exclusive lock across the read, compare, and write in `write_if_unchanged` in `skills/sync/scripts/record_sync.py`, so a concurrent edit cannot land between the check and the replace per Edge Cases (concurrent syncs) (partial)
