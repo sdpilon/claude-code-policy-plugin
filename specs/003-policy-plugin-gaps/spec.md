@@ -137,6 +137,10 @@ A skill author or agent reading the frontmatter parser's contract can see, witho
 - **FR-018**: The skill and contract documentation for the frontmatter parser MUST state its return type, its error for a missing or malformed frontmatter block, and how an empty value is represented.
 - **FR-019**: The sync skill MUST replace its manual `synced_hash` write-back instruction with a reference to the record-sync command.
 - **FR-020**: The plugin MUST keep its existing single-rule commands (add, retire, status, sync check, judge, init, update) behaving as they do today.
+  - **Exception (add)**: `add` now applies the same statement check as `edit` (FR-006). A statement
+    that is not one sentence, or does not have exactly one modal verb, is rejected with exit 2 and
+    nothing is written. This is intentional: a rule written through `add` must meet the same rule
+    as one changed through `edit`. Other `add` behavior is unchanged.
 
 ### Key Entities
 
