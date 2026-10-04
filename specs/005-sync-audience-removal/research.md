@@ -9,6 +9,7 @@ No NEEDS CLARIFICATION markers remain. The three clarifications of 2026-10-04 (s
 **Rationale**: The existing parser already supports one nested level (as `verification` does), so no parser change is needed. Keeping the formal statement in the body preserves what `judge`, `audit` and `status` read today.
 
 **Alternatives considered**:
+
 - Per-audience sections in the body. Rejected: the body is parsed for the statement line, and adding sections makes exact-match boundaries harder to specify.
 - Separate per-audience files. Rejected: splits one rule across files, against Principle II's one-file-per-rule model.
 
