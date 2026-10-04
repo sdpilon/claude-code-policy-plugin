@@ -19,10 +19,12 @@ Expected: `removed`
 ## 2. Confirm no live file references the feature (FR-003, FR-004, FR-006, SC-001)
 
 ```sh
-git grep -n -i -E 'policy:migrate|skills/migrate|migrate_rules|migrating' -- ':!specs/001-*' ':!specs/002-*' ':!specs/003-*'
+git grep -n -i -E 'policy:migrate|skills/migrate|migrate_rules|migrating' -- ':!specs/001-*' ':!specs/002-*' ':!specs/003-*' ':!specs/004-*' ':!.specify/**'
 ```
 
-Expected: no output. A match in a live file means a reference was missed.
+Expected: no output. A match in a live file means a reference was missed. Spec Kit's own docs
+under `.specify/` and this feature's spec artifacts under `specs/004-*` are excluded, since they
+describe the removal or are another tool's documentation.
 
 ## 3. Confirm the historical specs are untouched (FR-007, SC-004)
 

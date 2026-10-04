@@ -12,6 +12,7 @@ and edit the three description/documentation files in place.
 with plain `rm` would leave the deletions unstaged and easy to miss in review.
 
 **Alternatives considered**:
+
 - Leave the skill in place and mark it deprecated. Rejected: the spec says remove entirely, and
   a deprecated command still ships to installers.
 - Move the files to an `archive/` directory. Rejected: keeps dead code in the tree, and history
