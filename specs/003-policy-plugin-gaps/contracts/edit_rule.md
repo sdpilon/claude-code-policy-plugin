@@ -47,7 +47,7 @@ stdout, one line per rule: `changed <ID>`, `unchanged <ID>` (no field changed), 
 |---|---|
 | 0 | every named rule was changed or unchanged; or a preview |
 | 2 | at least one rule rejected; nothing written |
-| 1 | an I/O failure during writes; restore attempted and reported |
+| 1 | an I/O failure during writes, or a rule that changed since it was read; restore attempted and reported. Also when another policy write holds the rule-directory lock for longer than the timeout: nothing is written. |
 
 ## Guarantees
 

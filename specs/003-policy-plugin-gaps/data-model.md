@@ -25,6 +25,13 @@ sentence with exactly one modal verb (MUST, SHOULD, MUST NOT, MAY).
 `content_hash` ignores the `synced_hash` line. An edit changes the content hash, so the rule
 reads as changed until the next `record_sync`.
 
+## Write lock (`.write.lock`)
+
+Every write phase (`record_sync` and `edit`) holds an advisory `flock` on `.policy/rule/.write.lock`
+while it reads, compares, and writes. The file is created on first use. Its name does not end in
+`.md`, so rule scans never see it. The lock only protects writers that take it, so a tool that
+writes rule files directly is still unprotected. Consuming repos may want to gitignore the file.
+
 ## Sync record
 
 The `synced_hash` field on a rule. States: absent (never synced, always "changed"), matches

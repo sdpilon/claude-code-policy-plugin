@@ -229,3 +229,8 @@ Task: "T020 [P] [US6] Document parse() in specs/001-.../contracts/policy_frontma
 ## Phase 10: Convergence
 
 - [X] T029 Hold an exclusive lock across the read, compare, and write in `write_if_unchanged` in `skills/sync/scripts/record_sync.py`, so a concurrent edit cannot land between the check and the replace per Edge Cases (concurrent syncs) (partial)
+
+## Phase 11: Convergence
+
+- [X] T030 Add the lock-timeout case (exit 1, nothing written) to the exit-code tables in `specs/003-policy-plugin-gaps/contracts/record_sync.md` and `specs/003-policy-plugin-gaps/contracts/edit_rule.md` per T029 (partial)
+- [X] T031 Document the `.write.lock` file in `specs/003-policy-plugin-gaps/data-model.md`, and in the Conventions section of `README.md`, including that the lock is advisory and that consuming repos may want to gitignore it per T029 (unrequested)

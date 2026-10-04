@@ -25,7 +25,7 @@ python3 skills/sync/scripts/record_sync.py [--dir .policy/rule] <ID> [<ID> ...]
 |---|---|
 | 0 | every named rule is now recorded or was already recorded |
 | 2 | an ID is missing or malformed; nothing was written |
-| 1 | an unexpected I/O error; files already written stay written (each write is atomic) |
+| 1 | an unexpected I/O error, or a rule that changed while it was being recorded; files already written stay written (each write is atomic). Also when another policy write holds the rule-directory lock for longer than the timeout: nothing is written. |
 
 ## Output
 
