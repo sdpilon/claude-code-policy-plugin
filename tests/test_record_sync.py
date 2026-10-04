@@ -147,5 +147,71 @@ class ConcurrentWriteTests(unittest.TestCase):
             self.assertEqual(path.read_text(encoding="utf-8"), updated)
 
 
+HUMAN = "Secrets MUST NOT appear in CI logs."
+AGENT = "Never print secrets to CI output."
+
+WORDING_RULE = """---
+title: "No secrets in CI logs"
+created: 2026-10-02T00:00:00Z
+modified: 2026-10-02T00:00:00Z
+audience: [{audience}]
+verification:
+  method: written-only
+  via: ""
+wording:
+{wording}{synced}---
+
+**001**: Secrets MUST NOT appear in CI logs.
+"""
+
+
+def write_wording_rule(rule_dir, audience, wording, synced=""):
+    rule_dir.mkdir(parents=True, exist_ok=True)
+    path = rule_dir / "001.md"
+    body = "".join(f"  {a}: {t}\n" for a, t in wording.items())
+    path.write_text(
+        WORDING_RULE.format(audience=audience, wording=body, synced=synced), encoding="utf-8"
+    )
+    return path
+
+
+class RecordSyncWordingTests(unittest.TestCase):
+    def test_records_wording_for_current_audiences(self):
+        with scratch() as d:
+            rule_dir = Path(d) / "rule"
+            path = write_wording_rule(rule_dir, "human, agent", {"human": HUMAN, "agent": AGENT})
+            self.assertEqual(run(RECORD, "--dir", str(rule_dir), "001")[0], 0)
+            text = path.read_text(encoding="utf-8")
+            self.assertIn(f"synced_wording:\n  human: {HUMAN}\n  agent: {AGENT}\n", text)
+
+    def test_prunes_synced_wording_for_dropped_audience(self):
+        with scratch() as d:
+            rule_dir = Path(d) / "rule"
+            synced = f"synced_wording:\n  human: {HUMAN}\n  agent: {AGENT}\n"
+            path = write_wording_rule(rule_dir, "agent", {"agent": AGENT}, synced)
+            self.assertEqual(run(RECORD, "--dir", str(rule_dir), "001")[0], 0)
+            text = path.read_text(encoding="utf-8")
+            self.assertIn(f"synced_wording:\n  agent: {AGENT}\n", text)
+            self.assertNotIn("  human:", text.split("synced_wording:", 1)[1])
+
+    def test_removes_synced_wording_block_when_no_current_wording_remains(self):
+        with scratch() as d:
+            rule_dir = Path(d) / "rule"
+            synced = f"synced_wording:\n  human: {HUMAN}\n"
+            path = write_wording_rule(rule_dir, "agent", {}, synced)
+            self.assertEqual(run(RECORD, "--dir", str(rule_dir), "001")[0], 0)
+            self.assertNotIn("synced_wording", path.read_text(encoding="utf-8"))
+
+    def test_recorded_rule_reads_unchanged(self):
+        with scratch() as d:
+            rule_dir = Path(d) / "rule"
+            write_wording_rule(rule_dir, "human, agent", {"human": HUMAN, "agent": AGENT})
+            run(RECORD, "--dir", str(rule_dir), "001")
+            _, out, _ = run(STATUS, "--dir", str(rule_dir), "--root", d)
+            row = json.loads(out)[0]
+            self.assertFalse(row["changed"])
+            self.assertEqual(row["stale_in"], [])
+
+
 if __name__ == "__main__":
     unittest.main()

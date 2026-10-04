@@ -9,31 +9,53 @@ description: Check whether CONTRIBUTING.md and the agent-operational doc still m
 agent-operational doc (`CLAUDE.md` plus `.claude/rules/<id>.md`) are outputs. This skill
 proposes changes; it never writes without approval.
 
+Each rule carries one `wording` line per audience in its frontmatter. Sync copies that wording
+verbatim into the matching doc. After a sync, the rule's `synced_wording` holds what was last
+written for each audience, so an audience that is later dropped can be found and removed.
+
 ## Steps
 
 1. **Get the mechanical state.** Run:
 
    ```sh
-   python3 ${CLAUDE_PLUGIN_ROOT}/skills/sync/scripts/sync_status.py --dir .policy/rule
+   python3 ${CLAUDE_PLUGIN_ROOT}/skills/sync/scripts/sync_status.py --dir .policy/rule --root .
    ```
 
-   Each row gives `id`, `audience`, `targets`, `changed`, and an optional `error`.
+   Each row gives `id`, `audience`, `targets`, `changed`, `missing_wording`, `stale_in`, and an
+   optional `error`.
 2. **Skip unchanged rules.** Only `"changed": true` rules need work (FR-008).
-3. **Fix errors first.** A rule with an `error` field is malformed. Surface it to the person
-   instead of proposing docs for it.
-4. **Propose, don't apply.** For each changed rule, use its `targets` list (never infer from
-   `audience`) to draft the exact text change in each target. Show the full proposal:
-   file, the old and new text, and the rule ID it comes from.
+3. **Fix errors and defects first.** A rule with an `error` field is malformed. Surface it to the
+   person instead of proposing docs for it. A rule with a non-empty `missing_wording` has no
+   wording for an active audience. Report it as a defect and propose nothing for that audience
+   until someone adds the wording with `/policy:edit`.
+4. **Propose, don't apply.** For each changed rule, draft the change for each item, and show the
+   full proposal: the file, the old and new text, the rule ID it comes from, and the position.
+   - **Removals** come from `stale_in`, one entry per dropped audience location. Propose a removal
+     only when `status` is `"found"`. Show the matched `text` and the one adjoining newline or
+     space that goes with it, so no blank gap is left. Never propose a removal for `not_found`,
+     `ambiguous`, or `absent`. Report those by document and rule ID with the reason:
+     `not_found` means the text was reworded by hand, `ambiguous` means it appears more than once,
+     and `absent` means the document does not exist.
+   - **Additions** come from `targets`, which lists the docs for the current audiences (never infer
+     them from `audience`). Each addition states the target section and the position within it
+     (FR-008). Its text is that rule's `wording` for that document's audience, copied verbatim
+     (FR-011). Never write the formal statement into a derived doc.
 5. **Wait for approval** (Constitution Principle III). Re-check the target files are unchanged
-   since you read them before applying anything.
-6. **Apply and record.** After approval, make the edits. Then record the rules you applied
-   with `python3 ${CLAUDE_PLUGIN_ROOT}/skills/sync/scripts/record_sync.py <ID> [<ID> ...]`, passing only the
-   IDs that were approved and applied. The script writes each rule's `synced_hash` and leaves
-   the rest of the file unchanged, so the next run reports those rules as unchanged. It exits
-   2 without writing anything if an ID is missing.
-7. **Report.** Say what was synced, and say so plainly if nothing had changed.
+   since you read them before applying anything. Before applying each approved removal or
+   addition, re-read its target document. If the document changed since the proposal, stop for
+   that item and ask again (FR-005).
+6. **Apply and record.** After approval, make the edits. Then record the rules you applied with
+   `python3 ${CLAUDE_PLUGIN_ROOT}/skills/sync/scripts/record_sync.py <ID> [<ID> ...]`, passing only
+   the IDs that were approved and applied. The script writes each rule's `synced_hash` and
+   `synced_wording` and leaves the rest of the file unchanged. Dropped audiences are pruned from
+   `synced_wording`, so the next run reports those rules as unchanged. It exits 2 without writing
+   anything if an ID is missing.
+7. **Report.** Say what was synced, which proposals were declined, and which stale or missing
+   items were reported but not proposed. A declined removal leaves its rule `changed`, and its
+   stale location stays listed on the next run. Say so plainly if nothing had changed.
 
 ## Guardrails
 
 - Don't commit unless the user asks.
 - A clean sync is a useful result. Say so plainly.
+- Text that no longer matches is reported, never removed. Only an exact, single match is removed.
