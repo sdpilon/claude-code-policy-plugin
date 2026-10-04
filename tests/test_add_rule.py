@@ -51,6 +51,14 @@ class AddRuleTests(unittest.TestCase):
             code, _, _ = self.common(d, **{"--verification-method": "maybe"})
             self.assertEqual(code, 2)
 
+    def test_statement_with_two_modal_verbs_exits_2_and_writes_nothing(self):
+        with scratch() as d:
+            code, _, err = self.common(d, **{"--statement": "Builds MUST pass and MAY skip lint."})
+            self.assertEqual(code, 2)
+            self.assertIn("modal", err)
+            rule_dir = Path(d) / ".policy" / "rule"
+            self.assertFalse(rule_dir.exists() and any(rule_dir.iterdir()))
+
     def test_sequential_adds_never_collide(self):
         with scratch() as d:
             first = load(self.common(d)[1])["id"]

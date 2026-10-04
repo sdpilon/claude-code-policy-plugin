@@ -158,6 +158,29 @@ def validate(fields):
     return errors
 
 
+MODAL_RE = re.compile(r"\b(MUST NOT|SHOULD NOT|MUST|SHOULD|MAY)\b")
+SENTENCE_BREAK_RE = re.compile(r"(?<=[.!?])\s+")
+
+
+def validate_statement(text):
+    """Check a rule statement: one sentence with exactly one modal verb (constitution, Principle II).
+
+    Returns a list of problems. Shared by add and edit so both writers enforce the same rule.
+    """
+    stripped = (text or "").strip()
+    if not stripped:
+        return ["statement must be non-empty"]
+    problems = []
+    if len(SENTENCE_BREAK_RE.split(stripped)) != 1:
+        problems.append("statement must be one sentence")
+    modals = MODAL_RE.findall(stripped)
+    if len(modals) != 1:
+        problems.append(
+            f"statement must have exactly one modal verb (MUST, SHOULD, MUST NOT, MAY), found {len(modals)}"
+        )
+    return problems
+
+
 def validate_tombstone(fields):
     """Schema for .policy/retired/<id>.md. Returns a list of problems."""
     errors = []
