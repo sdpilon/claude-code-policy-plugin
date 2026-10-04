@@ -23,6 +23,8 @@ One file under `.policy/rule/`.
 - `wording` keys must equal the set of `audience` values. A missing key is a defect.
 - `synced_wording` keys may be any subset of `{human, agent}`. Keys for audiences no longer in `audience` are stale until `record_sync` prunes them.
 - Empty values are invalid in `wording`. In `synced_wording`, an absent key means nothing was written for that audience.
+- `edit` rejects an audience removal when `wording.<audience>` differs from a recorded `synced_wording.<audience>` (FR-012). The check runs before the `wording` key is dropped.
+- `edit` rejects a statement change without the review flag (FR-009).
 
 ## Sync row (extended)
 
@@ -33,25 +35,33 @@ One file under `.policy/rule/`.
 | `targets` | list of paths | Derived docs for current audiences (existing) |
 | `current_hash` | hex | Content hash, excluding `synced_hash` and `synced_wording` |
 | `synced_hash` | hex or null | Recorded hash (existing) |
-| `changed` | bool | Existing rule, unchanged |
-| `error` | string | Present only for malformed rules (existing) |
+| `changed` | bool | True when the hash differs, the rule is invalid, or `missing_wording` or `stale_in` is non-empty |
+| `error` | string | Present only for invalid or unparseable rules (existing) |
 | `missing_wording` | list of audiences | **New.** Active audiences with no `wording` entry. Empty when none. |
-| `stale_in` | list of stale locations | **New.** Docs for audiences dropped since last record. Empty when none. |
+| `stale_in` | list of stale locations | **New.** Locations for audiences dropped since the last record, or reworded while still targeted. Empty when none, and always empty for an invalid rule. |
 
 ### Stale location
 
 | Field | Type | Meaning |
 |-------|------|---------|
 | `path` | string | `CONTRIBUTING.md` (human), `CLAUDE.md` (agent), or `.claude/rules/<id>.md` (agent) |
-| `audience` | string | The dropped audience whose wording is searched for |
+| `audience` | string | The audience whose recorded wording is searched for |
 | `kind` | `"span"` or `"file"` | `span` for text inside a shared doc; `file` for the per-rule file |
-| `text` | string | The matched span in the doc when `found` (the exact bytes a removal deletes); otherwise the stored `synced_wording` for that audience |
+| `reason` | `"dropped"` or `"reworded"` | `dropped`: the audience left `audience`. `reworded`: the audience is still targeted and its `wording` differs from `synced_wording` |
+| `text` | string | The matched span in the doc when `found` (the exact bytes a removal deletes); otherwise the recorded `synced_wording` entry for that audience |
 | `status` | `"found"`, `"not_found"`, `"ambiguous"`, `"absent"` | Result of the whitespace-normalized match |
 
 Only `status: "found"` entries are removal candidates. The others are reported.
 
+## Proposal pairing (sync skill, not stored)
+
+- A `dropped` removal is proposed alone. Its `targets` no longer include that audience.
+- A `reworded` removal is proposed together with an addition of the current `wording` for the same audience to the same doc (FR-002). For `kind: "file"`, the addition overwrites the file (R12).
+
 ## State transitions
 
-`synced` (hash and wording recorded, no stale locations) → audience or wording edited → `changed` → `add`/`edit` already wrote new `wording` → sync proposes writes for active audiences and removals for stale locations → approved and applied → `record_sync` writes `synced_wording` for active audiences and prunes dropped ones → `synced` again.
+`synced` (hash and wording recorded, no stale locations) → audience dropped, or wording edited for a still-targeted audience → `changed` → `add`/`edit` already wrote new `wording` → sync proposes writes for active audiences, removals for `dropped` and `reworded` stale locations, and additions paired with `reworded` removals → approved and applied → `record_sync` writes `synced_wording` for active audiences and prunes dropped ones → `synced` again.
+
+An audience dropped while its wording has an unrecorded edit does not reach this flow: `edit` rejects it (FR-012). The person records the wording change first, then drops the audience.
 
 A declined removal keeps the rule `changed` and the stale location listed.

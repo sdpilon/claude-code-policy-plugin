@@ -31,7 +31,7 @@ python3 $PLUGIN/skills/edit/scripts/edit_rule.py --dir .policy/rule \
 python3 $PLUGIN/skills/sync/scripts/sync_status.py --dir .policy/rule --root .
 ```
 
-**Pass condition**: `changed: true`, `targets` is `["CLAUDE.md", ".claude/rules/001.md"]`, and `stale_in` has `CONTRIBUTING.md` with `audience: "human"`, `kind: "span"`, and `status: "found"`.
+**Pass condition**: `changed: true`, `targets` is `["CLAUDE.md", ".claude/rules/001.md"]`, and `stale_in` has `CONTRIBUTING.md` with `audience: "human"`, `kind: "span"`, `reason: "dropped"`, and `status: "found"`.
 
 ## Scenario 2: approve, remove, record
 
@@ -66,7 +66,50 @@ Start from Setup, run Scenario 1's edit, then delete `CONTRIBUTING.md`.
 
 From Setup, delete the `agent` line under `wording:` in `.policy/rule/001.md` by hand, then run sync.
 
-**Pass condition**: `missing_wording` lists `agent`.
+**Pass condition**: `missing_wording` lists `agent`, and the row has an `error`.
+
+## Scenario 7: reword a still-targeted audience
+
+From Setup (both audiences still targeted), change the human wording and do not record:
+
+```sh
+python3 $PLUGIN/skills/edit/scripts/edit_rule.py --dir .policy/rule \
+  --set wording.human="Secrets MUST NOT leak into CI logs." 001
+python3 $PLUGIN/skills/sync/scripts/sync_status.py --dir .policy/rule --root .
+```
+
+**Pass condition**: `changed: true`, `targets` still includes `CONTRIBUTING.md`, and `stale_in` has `CONTRIBUTING.md` with `audience: "human"`, `reason: "reworded"`, and `status: "found"`. The proposal pairs that removal with an addition of the new human wording to `CONTRIBUTING.md`.
+
+## Scenario 8: rejected drop after an unrecorded wording edit
+
+From Setup, run Scenario 7's edit, then drop `human` without recording:
+
+```sh
+python3 $PLUGIN/skills/edit/scripts/edit_rule.py --dir .policy/rule \
+  --set audience=agent 001
+```
+
+**Pass condition**: exit `2`, the message names `human` and says to run sync or revert the wording, and `.policy/rule/001.md` is byte-identical to before the command.
+
+## Scenario 9: agent-only file
+
+From Setup, drop `agent` (`--set audience=human`). `.claude/rules/001.md` does not exist yet, so write it the way sync would, with the exact agent wording and a newline, then run sync:
+
+```sh
+printf 'Never print secrets to CI output.\n' > .claude/rules/001.md
+python3 $PLUGIN/skills/sync/scripts/sync_status.py --dir .policy/rule --root .
+```
+
+**Pass condition**: `stale_in` has `.claude/rules/001.md` with `kind: "file"`, `reason: "dropped"`, and `status: "found"`. If the file is then edited by hand, its status is `not_found` and no deletion is proposed.
+
+## Scenario 10: statement change needs the review flag
+
+```sh
+python3 $PLUGIN/skills/edit/scripts/edit_rule.py --dir .policy/rule \
+  --set statement="Secrets MUST NOT appear in build logs." 001
+```
+
+**Pass condition**: exit `2`, the message asks for `--reviewed-wording`, and the file is unchanged. With `--reviewed-wording` added, the statement is written. `--preview` without the flag prints a `review wording.<audience>` line for each audience.
 
 ## Cleanup
 
@@ -76,4 +119,4 @@ cd / && rm -rf "$D"
 
 ## Automated coverage
 
-`python3 -m unittest tests.test_sync_status tests.test_record_sync tests.test_add_rule tests.test_edit_rule tests.test_policy_frontmatter` covers these scenarios with the same fixtures.
+`python3 -m unittest tests.test_sync_status tests.test_record_sync tests.test_add_rule tests.test_edit_rule tests.test_policy_frontmatter` covers Scenarios 1 to 6 with the same fixtures. Scenarios 7 to 10 are covered once T039 and the reworded-audience tasks are implemented.
