@@ -31,4 +31,4 @@
 
 ## Notes
 
-- Detection uses the rule's bold ID token in derived docs; the alternative of recording prior audience was rejected in clarification (2026-10-04).
+- Detection matches each stored wording in derived docs, whitespace normalized, and removes it only when it occurs exactly once (R2). The earlier bold-ID-token approach was superseded in clarification (2026-10-04).

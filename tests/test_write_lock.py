@@ -3,7 +3,7 @@ import sys
 import unittest
 from pathlib import Path
 
-from tests._cli import scratch
+from tests._cli import scratch, settle_docs
 
 REPO = Path(__file__).resolve().parent.parent
 SCRIPTS = REPO / "scripts"
@@ -81,11 +81,12 @@ class BusyLockTests(unittest.TestCase):
         with scratch() as d:
             rule_dir = Path(d) / "rule"
             path = make_rule(rule_dir)
+            settle_docs(d, {"agent": "Never print secrets to CI output."})
             before = path.read_bytes()
             record_sync.LOCK_TIMEOUT = 0.2
             try:
                 with policy_lock.write_lock(rule_dir):
-                    code = record_sync.main(["--dir", str(rule_dir), "001"])
+                    code = record_sync.main(["--root", str(d), "--dir", str(rule_dir), "001"])
             finally:
                 record_sync.LOCK_TIMEOUT = 10.0
             self.assertEqual(code, 1)

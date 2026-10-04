@@ -1,6 +1,6 @@
 # Research: Sync Removal When Audience Drops a Target
 
-No NEEDS CLARIFICATION markers remain. The clarifications of 2026-10-04 settled the design points. R1 to R8 record decisions made in the first plan. R9 to R13 record decisions made when the spec was widened and clarified, and they are the basis for the revised plan.
+No NEEDS CLARIFICATION markers remain. The clarifications of 2026-10-04 settled the design points. R1 to R8 record decisions made in the first plan. R9 to R13 record decisions made when the spec was widened and clarified, and they are the basis for the revised plan. R14 and R15 record the partial-approval and re-proposal decisions clarified on 2026-10-04.
 
 ## R1: Where per-audience wording lives
 
@@ -89,13 +89,27 @@ No NEEDS CLARIFICATION markers remain. The clarifications of 2026-10-04 settled 
 
 **Rationale**: Deletion is the clarified outcome for a dropped audience (R5). For a reworded, still-targeted audience the file must stay, so the stale copy is replaced rather than deleted. The same exact-match gate protects hand edits.
 
-**Open point**: The spec does not state this case. It follows from R5 and R9, and it is recorded here so the implementer does not invent a different behavior. Confirm it in the next clarify pass if you want it in the spec.
+**Stated in the spec**: FR-002 covers this case, so it is no longer open. It follows from R5 and R9.
 
 ## R13: Source re-check before applying (FR-005, Constitution Principle III)
 
 **Decision**: The proposal records each rule's `current_hash`. Before applying, the sync skill re-runs `sync_status` and stops for any rule whose hash changed. `record_sync --expect ID=HASH` refuses with exit `1` and writes nothing when the rule's current content hash differs from the one given.
 
 **Rationale**: Principle III requires the source to be re-checked before a proposal is applied. The script check is a last guard at the point the record is written, so a change between approval and record cannot be recorded as synced.
+
+## R14: Partial approval records nothing for the rule (FR-004, clarified 2026-10-04)
+
+**Decision**: A rule is recorded only when every proposed change for it was applied. `record_sync` checks this itself, from disk state: it refuses a rule while the rule has a pending addition or a found removal, using the same `build_row` as `sync_status`. This is script-enforced (analysis finding K1). The rule then stays `changed`, and the next run re-proposes it.
+
+**Rationale**: `record_sync` writes one `synced_hash` and `synced_wording` per rule, so recording a rule with a pending change would hide that change. Earlier SKILL.md step 6 said "passing only the IDs that were approved and applied", which allows partial recording. That text must be tightened to "every proposed change applied" (done in T052).
+
+## R15: Already-applied changes are not re-proposed (FR-004, clarified 2026-10-04)
+
+**Decision**: `sync_status` adds a `pending` list per rule, with an entry for each target whose current wording is not present, matched as `found` (exact once, whitespace normalized; a `kind: "file"` target must equal the wording plus a newline). The sync proposal's additions come only from `pending`. A `reworded` stale entry whose old text is `not_found` is dropped from `stale_in` when the new wording is present once in that doc, because the removal is already in place.
+
+**Rationale**: Without this, a partly applied change would be proposed again on the next run and duplicate text. Presence checks are deterministic matching, so they belong in the script (Principle IV).
+
+**Decision (2026-10-04, remediation of analysis finding I5)**: A `dropped` removal already applied but not yet recorded reads as `not_found` on the next run, the same as a hand edit. This stays as it is. The report is accurate, since the text is no longer where the record says, and no new status is added. Recording the rule after every change is applied clears it. Tests do not encode a separate message for this case.
 
 ## Plan-level decisions recorded for implementers
 

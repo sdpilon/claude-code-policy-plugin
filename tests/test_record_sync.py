@@ -2,7 +2,7 @@ import json
 import unittest
 from pathlib import Path
 
-from tests._cli import run, scratch
+from tests._cli import run, scratch, settle_docs
 
 REPO = Path(__file__).resolve().parent.parent
 RECORD = "skills/sync/scripts/record_sync.py"
@@ -44,11 +44,12 @@ def make_rules(root, ids):
     rule_dir.mkdir(parents=True)
     for rule_id in ids:
         (rule_dir / f"{rule_id}.md").write_text(RULE.format(id=rule_id), encoding="utf-8")
+        settle_docs(root, {"agent": "Never print secrets to CI output."}, int(rule_id))
     return rule_dir
 
 
 def statuses(rule_dir):
-    code, out, _ = run(STATUS, "--dir", str(rule_dir))
+    code, out, _ = run(STATUS, "--dir", str(rule_dir), "--root", str(rule_dir.parent.parent))
     assert code == 0, out
     return {f"{row['id']:03d}": row for row in json.loads(out)}
 
@@ -57,7 +58,7 @@ class RecordSyncTests(unittest.TestCase):
     def test_records_hash_so_rules_report_unchanged(self):
         with scratch() as d:
             rule_dir = make_rules(d, ["001", "002"])
-            code, out, _ = run(RECORD, "--dir", str(rule_dir), "001", "002")
+            code, out, _ = run(RECORD, "--root", str(d), "--dir", str(rule_dir), "001", "002")
             self.assertEqual(code, 0)
             self.assertIn("recorded 001", out)
             self.assertIn("recorded 002", out)
@@ -68,9 +69,9 @@ class RecordSyncTests(unittest.TestCase):
     def test_second_run_is_a_no_op(self):
         with scratch() as d:
             rule_dir = make_rules(d, ["001"])
-            run(RECORD, "--dir", str(rule_dir), "001")
+            run(RECORD, "--root", str(d), "--dir", str(rule_dir), "001")
             before = (rule_dir / "001.md").read_bytes()
-            code, out, _ = run(RECORD, "--dir", str(rule_dir), "001")
+            code, out, _ = run(RECORD, "--root", str(d), "--dir", str(rule_dir), "001")
             self.assertEqual(code, 0)
             self.assertIn("unchanged 001", out)
             self.assertEqual((rule_dir / "001.md").read_bytes(), before)
@@ -79,7 +80,7 @@ class RecordSyncTests(unittest.TestCase):
         with scratch() as d:
             rule_dir = make_rules(d, ["001"])
             before = (rule_dir / "001.md").read_bytes()
-            code, _out, err = run(RECORD, "--dir", str(rule_dir), "001", "999")
+            code, _out, err = run(RECORD, "--root", str(d), "--dir", str(rule_dir), "001", "999")
             self.assertEqual(code, 2)
             self.assertIn("999", err)
             self.assertEqual((rule_dir / "001.md").read_bytes(), before)
@@ -88,21 +89,21 @@ class RecordSyncTests(unittest.TestCase):
         with scratch() as d:
             rule_dir = make_rules(d, ["001"])
             original = (rule_dir / "001.md").read_text(encoding="utf-8")
-            run(RECORD, "--dir", str(rule_dir), "001")
+            run(RECORD, "--root", str(d), "--dir", str(rule_dir), "001")
             recorded = (rule_dir / "001.md").read_text(encoding="utf-8")
             self.assertEqual(without_synced_fields(recorded), original)
 
     def test_recording_an_edited_rule_updates_its_hash(self):
         with scratch() as d:
             rule_dir = make_rules(d, ["001"])
-            run(RECORD, "--dir", str(rule_dir), "001")
+            run(RECORD, "--root", str(d), "--dir", str(rule_dir), "001")
             path = rule_dir / "001.md"
             path.write_text(
                 path.read_text(encoding="utf-8").replace("CI logs", "build logs"),
                 encoding="utf-8",
             )
             self.assertTrue(statuses(rule_dir)["001"]["changed"])
-            code, out, _ = run(RECORD, "--dir", str(rule_dir), "001")
+            code, out, _ = run(RECORD, "--root", str(d), "--dir", str(rule_dir), "001")
             self.assertEqual(code, 0)
             self.assertIn("recorded 001", out)
             self.assertFalse(statuses(rule_dir)["001"]["changed"])
@@ -172,6 +173,7 @@ def write_wording_rule(rule_dir, audience, wording, synced=""):
     path.write_text(
         WORDING_RULE.format(audience=audience, wording=body, synced=synced), encoding="utf-8"
     )
+    settle_docs(rule_dir.parent, wording)
     return path
 
 
@@ -180,7 +182,7 @@ class RecordSyncWordingTests(unittest.TestCase):
         with scratch() as d:
             rule_dir = Path(d) / "rule"
             path = write_wording_rule(rule_dir, "human, agent", {"human": HUMAN, "agent": AGENT})
-            self.assertEqual(run(RECORD, "--dir", str(rule_dir), "001")[0], 0)
+            self.assertEqual(run(RECORD, "--root", str(d), "--dir", str(rule_dir), "001")[0], 0)
             text = path.read_text(encoding="utf-8")
             self.assertIn(f"synced_wording:\n  human: {HUMAN}\n  agent: {AGENT}\n", text)
 
@@ -189,7 +191,7 @@ class RecordSyncWordingTests(unittest.TestCase):
             rule_dir = Path(d) / "rule"
             synced = f"synced_wording:\n  human: {HUMAN}\n  agent: {AGENT}\n"
             path = write_wording_rule(rule_dir, "agent", {"agent": AGENT}, synced)
-            self.assertEqual(run(RECORD, "--dir", str(rule_dir), "001")[0], 0)
+            self.assertEqual(run(RECORD, "--root", str(d), "--dir", str(rule_dir), "001")[0], 0)
             text = path.read_text(encoding="utf-8")
             self.assertIn(f"synced_wording:\n  agent: {AGENT}\n", text)
             self.assertNotIn("  human:", text.split("synced_wording:", 1)[1])
@@ -199,14 +201,14 @@ class RecordSyncWordingTests(unittest.TestCase):
             rule_dir = Path(d) / "rule"
             synced = f"synced_wording:\n  human: {HUMAN}\n"
             path = write_wording_rule(rule_dir, "agent", {}, synced)
-            self.assertEqual(run(RECORD, "--dir", str(rule_dir), "001")[0], 0)
+            self.assertEqual(run(RECORD, "--root", str(d), "--dir", str(rule_dir), "001")[0], 0)
             self.assertNotIn("synced_wording", path.read_text(encoding="utf-8"))
 
     def test_recorded_rule_reads_unchanged(self):
         with scratch() as d:
             rule_dir = Path(d) / "rule"
             write_wording_rule(rule_dir, "human, agent", {"human": HUMAN, "agent": AGENT})
-            run(RECORD, "--dir", str(rule_dir), "001")
+            run(RECORD, "--root", str(d), "--dir", str(rule_dir), "001")
             _, out, _ = run(STATUS, "--dir", str(rule_dir), "--root", d)
             row = json.loads(out)[0]
             self.assertFalse(row["changed"])
@@ -222,7 +224,9 @@ class RecordSyncExpectTests(unittest.TestCase):
         with scratch() as d:
             rule_dir = make_rules(d, ["001"])
             digest = self.proposed_hash(rule_dir)
-            code, out, _ = run(RECORD, "--dir", str(rule_dir), "--expect", f"001={digest}", "001")
+            code, out, _ = run(
+                RECORD, "--root", str(d), "--dir", str(rule_dir), "--expect", f"001={digest}", "001"
+            )
             self.assertEqual(code, 0)
             self.assertIn("recorded 001", out)
 
@@ -243,9 +247,62 @@ class RecordSyncExpectTests(unittest.TestCase):
     def test_expect_for_a_rule_not_being_recorded_exits_2(self):
         with scratch() as d:
             rule_dir = make_rules(d, ["001", "002"])
-            code, _out, err = run(RECORD, "--dir", str(rule_dir), "--expect", "002=abc", "001")
+            code, _out, err = run(
+                RECORD, "--root", str(d), "--dir", str(rule_dir), "--expect", "002=abc", "001"
+            )
             self.assertEqual(code, 2)
             self.assertIn("002", err)
+
+
+class RecordSyncUnappliedTests(unittest.TestCase):
+    """FR-004 and R14: record_sync refuses a rule that still has an unapplied change."""
+
+    NEW_HUMAN = "Secrets MUST NOT leak into CI logs."
+
+    def test_refuses_while_an_addition_is_pending(self):
+        with scratch() as d:
+            rule_dir = Path(d) / "rule"
+            path = write_wording_rule(rule_dir, "human, agent", {"human": HUMAN, "agent": AGENT})
+            (Path(d) / "CONTRIBUTING.md").unlink()
+            before = path.read_bytes()
+            code, _out, err = run(RECORD, "--root", str(d), "--dir", str(rule_dir), "001")
+            self.assertEqual(code, 1)
+            self.assertIn("addition to CONTRIBUTING.md", err)
+            self.assertEqual(path.read_bytes(), before)
+
+    def test_scenario_11_partial_approval_is_refused_then_recorded(self):
+        with scratch() as d:
+            rule_dir = Path(d) / "rule"
+            path = write_wording_rule(rule_dir, "human, agent", {"human": HUMAN, "agent": AGENT})
+            self.assertEqual(run(RECORD, "--root", str(d), "--dir", str(rule_dir), "001")[0], 0)
+            text = path.read_text(encoding="utf-8")
+            path.write_text(
+                text.replace(
+                    f"wording:\n  human: {HUMAN}", f"wording:\n  human: {self.NEW_HUMAN}", 1
+                ),
+                encoding="utf-8",
+            )
+            # The addition is approved and applied; the removal of the old sentence is declined.
+            (Path(d) / "CONTRIBUTING.md").write_text(
+                f"{HUMAN}\n{self.NEW_HUMAN}\n", encoding="utf-8"
+            )
+            before = path.read_bytes()
+            code, _out, err = run(RECORD, "--root", str(d), "--dir", str(rule_dir), "001")
+            self.assertEqual(code, 1)
+            self.assertIn("removal from CONTRIBUTING.md", err)
+            self.assertEqual(path.read_bytes(), before)
+            # Once the old sentence is removed too, every change is applied and the record goes through.
+            (Path(d) / "CONTRIBUTING.md").write_text(f"{self.NEW_HUMAN}\n", encoding="utf-8")
+            self.assertEqual(run(RECORD, "--root", str(d), "--dir", str(rule_dir), "001")[0], 0)
+
+    def test_not_found_report_does_not_block_recording(self):
+        with scratch() as d:
+            rule_dir = Path(d) / "rule"
+            synced = f"synced_wording:\n  human: {HUMAN}\n  agent: {AGENT}\n"
+            write_wording_rule(rule_dir, "agent", {"agent": AGENT}, synced)
+            (Path(d) / "CONTRIBUTING.md").write_text("Hand-edited text.\n", encoding="utf-8")
+            code, _out, _err = run(RECORD, "--root", str(d), "--dir", str(rule_dir), "001")
+            self.assertEqual(code, 0)
 
 
 if __name__ == "__main__":

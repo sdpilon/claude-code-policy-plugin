@@ -43,6 +43,8 @@ synced_wording:
 
 - `ID ...`: rules to record. Each must exist (exit `2` otherwise).
 - `--expect ID=HASH`, repeatable: the content hash the rule had when it was proposed. Each named ID must also be recorded. If a rule's current content hash differs, the run exits `1`, names the rule, and writes nothing. This is the source re-check Constitution Principle III requires.
+- `--root PATH`: directory derived-doc paths resolve against. Default `.`.
+- Refuses, exit `1` with nothing written, a rule that still has an unapplied change: a `pending` addition, or a `stale_in` removal with `status: "found"` (FR-004, R14). `not_found`, `ambiguous`, and `absent` entries do not block recording.
 - For each approved ID, sets `synced_wording` to the current `wording` for the rule's current audiences, verbatim.
 - Removes `synced_wording` entirely when no audience remains.
 - Writes only `synced_hash` and `synced_wording`. The body and other fields stay byte-identical.

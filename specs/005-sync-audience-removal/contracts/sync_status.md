@@ -12,7 +12,7 @@ python3 ${CLAUDE_PLUGIN_ROOT}/skills/sync/scripts/sync_status.py --dir .policy/r
 
 ## Output
 
-A JSON array, one row per rule, sorted by `id`. Existing fields are unchanged. New fields are `missing_wording` and `stale_in`. Each `stale_in` entry has a `reason`.
+A JSON array, one row per rule, sorted by `id`. Existing fields are unchanged. New fields are `missing_wording`, `stale_in`, `pending`, and `held`. Each `stale_in` entry has a `reason`.
 
 ```json
 [
@@ -47,6 +47,9 @@ A JSON array, one row per rule, sorted by `id`. Existing fields are unchanged. N
 - A missing doc yields `status: "absent"` and never raises an error.
 - `kind` is `"file"` only for `.claude/rules/<id>.md`, and `found` there requires the file content to equal the stored text plus a newline.
 - `missing_wording` lists active audiences with no `wording` entry.
+- `pending` lists each target whose current `wording` is not present in it (`kind` and `path` as in `stale_in`). A target whose wording is present exactly once is not listed. Additions are proposed only from `pending` (R15).
+- A `reworded` stale entry with `status: "not_found"` is omitted from `stale_in` when the current `wording` for that audience is present exactly once in the same doc (R15).
+- `held` lists each existing agent-only file `.claude/rules/<id>.md` whose content is neither the current `wording` plus a newline nor the last-written wording plus a newline (`path`, `audience`, `kind: "file"`). It is never proposed for overwrite and is reported by path and rule ID (FR-002, Assumptions).
 - The content hash ignores `synced_hash` and `synced_wording`, so recording does not make a rule read as changed.
 - A rule with `changed: true` because of `stale_in` or `missing_wording` is reported as changed, whether or not the stale text is found.
 - Output is deterministic for the same files.

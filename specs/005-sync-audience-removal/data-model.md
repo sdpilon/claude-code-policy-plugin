@@ -39,6 +39,8 @@ One file under `.policy/rule/`.
 | `error` | string | Present only for invalid or unparseable rules (existing) |
 | `missing_wording` | list of audiences | **New.** Active audiences with no `wording` entry. Empty when none. |
 | `stale_in` | list of stale locations | **New.** Locations for audiences dropped since the last record, or reworded while still targeted. Empty when none, and always empty for an invalid rule. |
+| `pending` | list of targets | **New.** Targets whose current `wording` is not already in place, so an addition is proposed. Empty when none, and always empty for an invalid rule. |
+| `held` | list of targets | **New.** Existing agent-only files whose content is neither the current nor the last-written wording plus a newline. Reported, never overwritten. Empty when none, and always empty for an invalid rule. |
 
 ### Stale location
 
@@ -60,7 +62,7 @@ Only `status: "found"` entries are removal candidates. The others are reported.
 
 ## State transitions
 
-`synced` (hash and wording recorded, no stale locations) → audience dropped, or wording edited for a still-targeted audience → `changed` → `add`/`edit` already wrote new `wording` → sync proposes writes for active audiences, removals for `dropped` and `reworded` stale locations, and additions paired with `reworded` removals → approved and applied → `record_sync` writes `synced_wording` for active audiences and prunes dropped ones → `synced` again.
+`synced` (hash and wording recorded, no stale locations) → audience dropped, or wording edited for a still-targeted audience → `changed` → `add`/`edit` already wrote new `wording` → sync proposes removals for `dropped` and `reworded` stale locations, and additions from `pending` (paired with `reworded` removals) → every change proposed for the rule approved and applied → `record_sync` writes `synced_wording` for active audiences and prunes dropped ones → `synced` again. If any change for the rule was declined or failed, the rule is not recorded and stays `changed` (FR-004).
 
 An audience dropped while its wording has an unrecorded edit does not reach this flow: `edit` rejects it (FR-012). The person records the wording change first, then drops the audience.
 

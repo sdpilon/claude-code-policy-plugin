@@ -18,6 +18,7 @@ Write the derived docs the way sync would, then record so the rule starts clean:
 ```sh
 printf 'Secrets MUST NOT appear in CI logs.\n' > CONTRIBUTING.md
 printf 'Never print secrets to CI output.\n' > CLAUDE.md
+printf 'Never print secrets to CI output.\n' > .claude/rules/001.md
 python3 $PLUGIN/skills/sync/scripts/record_sync.py --dir .policy/rule 001
 ```
 
@@ -111,6 +112,28 @@ python3 $PLUGIN/skills/edit/scripts/edit_rule.py --dir .policy/rule \
 
 **Pass condition**: exit `2`, the message asks for `--reviewed-wording`, and the file is unchanged. With `--reviewed-wording` added, the statement is written. `--preview` without the flag prints a `review wording.<audience>` line for each audience.
 
+## Scenario 11: partial approval keeps the rule changed
+
+From Setup, reword the human wording as in Scenario 7. Approve only the addition: write the new human wording into `CONTRIBUTING.md` and leave the old sentence in place, which declines that removal. Run sync again without recording:
+
+```sh
+printf 'Secrets MUST NOT appear in CI logs.\nSecrets MUST NOT leak into CI logs.\n' > CONTRIBUTING.md
+python3 $PLUGIN/skills/sync/scripts/sync_status.py --dir .policy/rule --root .
+```
+
+**Pass condition**: `changed: true`, and `pending` is empty because the new wording is already in place once. `stale_in` still lists `CONTRIBUTING.md` with `status: "found"` for the old sentence. `record_sync 001` refuses it with exit `1` and writes nothing until every change is applied (FR-004, R14).
+
+## Scenario 12: hand-edited agent-only file is held
+
+From Setup, replace `.claude/rules/001.md` with hand-written text, then run sync:
+
+```sh
+printf 'Someone rewrote this by hand.\n' > .claude/rules/001.md
+python3 $PLUGIN/skills/sync/scripts/sync_status.py --dir .policy/rule --root .
+```
+
+**Pass condition**: `held` lists `.claude/rules/001.md` with `audience: "agent"` and `kind: "file"`, and it is not in `pending`. Afterwards the file still holds the hand-written text, because sync never overwrites a held file.
+
 ## Cleanup
 
 ```sh
@@ -119,4 +142,4 @@ cd / && rm -rf "$D"
 
 ## Automated coverage
 
-`python3 -m unittest tests.test_sync_status tests.test_record_sync tests.test_add_rule tests.test_edit_rule tests.test_policy_frontmatter` covers Scenarios 1 to 10 with the same fixtures.
+`python3 -m unittest tests.test_sync_status tests.test_record_sync tests.test_add_rule tests.test_edit_rule tests.test_policy_frontmatter` covers Scenarios 1 to 12 with the same fixtures.
