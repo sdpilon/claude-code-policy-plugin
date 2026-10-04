@@ -45,7 +45,7 @@ One file under `.policy/rule/`.
 | `path` | string | `CONTRIBUTING.md` (human), `CLAUDE.md` (agent), or `.claude/rules/<id>.md` (agent) |
 | `audience` | string | The dropped audience whose wording is searched for |
 | `kind` | `"span"` or `"file"` | `span` for text inside a shared doc; `file` for the per-rule file |
-| `text` | string | The stored `synced_wording` for that audience |
+| `text` | string | The matched span in the doc when `found` (the exact bytes a removal deletes); otherwise the stored `synced_wording` for that audience |
 | `status` | `"found"`, `"not_found"`, `"ambiguous"`, `"absent"` | Result of the whitespace-normalized match |
 
 Only `status: "found"` entries are removal candidates. The others are reported.

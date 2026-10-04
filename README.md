@@ -22,15 +22,21 @@ generalized to drop riposte-specific content.
   Customized, missing, and no-longer-shipped files are reported and left alone. Exits
   non-zero on drift, so CI can surface it.
 - **`/policy:add`**: adds a rule as a new file under `.policy/rule/`, with the next
-  free ID. Writes only that layer and flags that derived docs are now out of sync.
-- **`/policy:edit`**: changes the title, tags, audience, verification, statement, or
-  rationale of one or more existing rules. Previews first, then applies all-or-none, and
+  free ID and one wording per audience. Writes only that layer and flags that derived docs
+  are now out of sync.
+- **`/policy:edit`**: changes the title, tags, audience, verification, statement, rationale,
+  or a per-audience wording of one or more existing rules. Previews first, lists each
+  audience's wording for review when the statement changes, then applies all-or-none, and
   sets `modified`. Backed by `skills/edit/scripts/edit_rule.py`.
 - **`/policy:sync`**: checks whether `CONTRIBUTING.md` and the agent-operational doc
-  still match `.policy/rule/`, using each rule's `audience` to pick its targets.
-  Propagates only approved changes, records each applied rule's `synced_hash` through
-  `skills/sync/scripts/record_sync.py`, and skips rules whose content hasn't changed since
-  the last sync.
+  still match `.policy/rule/`, using each rule's `audience` to pick its targets and each
+  audience's `wording` as the text to write. Proposes removal of wording last written for an
+  audience that was dropped, only when that text matches exactly once. Text that was reworded
+  by hand is reported, never removed. Every proposed addition states its placement. Propagates
+  only approved changes, records each applied rule's `synced_hash` and `synced_wording`
+  through `skills/sync/scripts/record_sync.py`, and skips rules whose content hasn't changed
+  since the last sync. Prose that already exists in a repo's docs is copied into rule files
+  by hand, once.
 - **`/policy:judge`**: decides whether a proposed rule is repo policy or personal
   preference that belongs in memory or a local doc instead.
 - **`/policy:audit`**: runs the `ci-checked` rules' checks in CI and files a GitHub issue
@@ -56,8 +62,9 @@ generalized to drop riposte-specific content.
   never reissued.
 - **Frontmatter.** Each rule file carries `title`, optional `tags`, `created`,
   `modified`, a required `audience` (`human`, `agent`, or both), a `verification`
-  method (`ci-blocking`, `ci-checked`, `human-verified`, or `written-only`), and a
-  `synced_hash` that `/policy:sync` maintains.
+  method (`ci-blocking`, `ci-checked`, `human-verified`, or `written-only`), a `wording`
+  map with one single-line entry per audience, and a `synced_hash` and `synced_wording`
+  that `/policy:sync` maintains.
 - **Statements.** Each rule is one sentence with one modal verb (MUST, SHOULD,
   MUST NOT, or MAY), and carries its own short rationale. Related rules cross-link by
   number instead of sharing rationale text.
