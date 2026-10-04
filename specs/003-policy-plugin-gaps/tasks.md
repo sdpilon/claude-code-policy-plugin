@@ -89,12 +89,12 @@ modules in `scripts/`, tests in `tests/`.
 
 > **Write these first and confirm they FAIL before T011.**
 
-- [ ] T010 [US3] Add bulk cases to `tests/test_edit_rule.py`: all-or-none when one rule fails validation; restore of already-written files when a write fails partway (inject the failure with a patched writer); `--preview` across several IDs writes nothing.
+- [X] T010 [US3] Add bulk cases to `tests/test_edit_rule.py`: all-or-none when one rule fails validation; restore of already-written files when a write fails partway (inject the failure with a patched writer); `--preview` across several IDs writes nothing.
 
 ### Implementation for User Story 3
 
-- [ ] T011 [US3] Add the bulk path to `skills/edit/scripts/edit_rule.py`: validate every target first, write only if all pass, restore from in-memory originals on a write failure (research R3).
-- [ ] T012 [US3] Document bulk usage and the all-or-none rule in `skills/edit/SKILL.md`.
+- [X] T011 [US3] Add the bulk path to `skills/edit/scripts/edit_rule.py`: validate every target first, write only if all pass, restore from in-memory originals on a write failure (research R3).
+- [X] T012 [US3] Document bulk usage and the all-or-none rule in `skills/edit/SKILL.md`.
 
 **Checkpoint**: US3 works with US2. A bulk change is one command and never half-applies on validation failure.
 

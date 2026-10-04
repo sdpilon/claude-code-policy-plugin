@@ -137,5 +137,94 @@ class EditRuleTests(unittest.TestCase):
             self.assertEqual(path.read_bytes(), before)
 
 
+class BulkEditTests(unittest.TestCase):
+    def test_bulk_edit_changes_every_listed_rule(self):
+        with scratch() as d:
+            rule_dir, first = make_rule(d, "001")
+            _, second = make_rule(d, "002")
+            code, out, _ = run(
+                EDIT, "--dir", str(rule_dir), "--set", "audience=agent", "001", "002"
+            )
+            self.assertEqual(code, 0, out)
+            self.assertIn("changed 001", out)
+            self.assertIn("changed 002", out)
+            for path in (first, second):
+                self.assertIn("audience: [agent]", path.read_text(encoding="utf-8"))
+
+    def test_one_invalid_rule_means_no_rule_changes(self):
+        with scratch() as d:
+            rule_dir, first = make_rule(d, "001")
+            _, second = make_rule(d, "002")
+            # Rule 002 has no statement line, so a statement edit cannot apply to it.
+            second.write_text(
+                second.read_text(encoding="utf-8").replace("**002**:", "Note:"),
+                encoding="utf-8",
+            )
+            before_first = first.read_bytes()
+            before_second = second.read_bytes()
+            code, out, _ = run(
+                EDIT,
+                "--dir",
+                str(rule_dir),
+                "--set",
+                "statement=Secrets MUST NOT appear in build logs.",
+                "001",
+                "002",
+            )
+            self.assertEqual(code, 2)
+            self.assertIn("rejected 002", out)
+            self.assertNotIn("changed 001", out)
+            self.assertEqual(first.read_bytes(), before_first)
+            self.assertEqual(second.read_bytes(), before_second)
+
+    def test_bulk_preview_writes_nothing(self):
+        with scratch() as d:
+            rule_dir, first = make_rule(d, "001")
+            _, second = make_rule(d, "002")
+            before = (first.read_bytes(), second.read_bytes())
+            code, out, _ = run(
+                EDIT, "--dir", str(rule_dir), "--preview", "--set", "tags=ci", "001", "002"
+            )
+            self.assertEqual(code, 0)
+            self.assertIn("preview 001", out)
+            self.assertIn("preview 002", out)
+            self.assertEqual((first.read_bytes(), second.read_bytes()), before)
+
+    def test_write_failure_restores_files_already_written(self):
+        import importlib.util
+        import io
+        from contextlib import redirect_stderr, redirect_stdout
+
+        repo = Path(__file__).resolve().parent.parent
+        spec = importlib.util.spec_from_file_location("edit_rule", repo / EDIT)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+
+        real_write = module.manifest.atomic_write_bytes
+        calls = []
+
+        def flaky_write(path, data):
+            calls.append(Path(path).name)
+            # The second write fails; the restore writes that follow must succeed.
+            if len(calls) == 2:
+                raise OSError("disk full")
+            return real_write(path, data)
+
+        with scratch() as d:
+            rule_dir, first = make_rule(d, "001")
+            _, second = make_rule(d, "002")
+            before = (first.read_bytes(), second.read_bytes())
+            module.manifest.atomic_write_bytes = flaky_write
+            out, err = io.StringIO(), io.StringIO()
+            try:
+                with redirect_stdout(out), redirect_stderr(err):
+                    code = module.main(["--dir", str(rule_dir), "--set", "tags=ci", "001", "002"])
+            finally:
+                module.manifest.atomic_write_bytes = real_write
+            self.assertEqual(code, 1)
+            self.assertIn("restored", err.getvalue())
+            self.assertEqual((first.read_bytes(), second.read_bytes()), before)
+
+
 if __name__ == "__main__":
     unittest.main()

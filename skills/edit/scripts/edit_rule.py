@@ -180,7 +180,9 @@ def main(argv):
                 print(f"  {key} -> {value}")
         return 0
 
-    # Phase 2: write only the rules that changed.
+    # Phase 2: write only the rules that changed. If a write fails, put back the files already
+    # written, from the originals held in memory. Each restore is atomic, like the writes.
+    written = []
     for raw, path, text, new_text in plan:
         if new_text == text:
             print(f"unchanged {raw}")
@@ -189,9 +191,28 @@ def main(argv):
             manifest.atomic_write_bytes(path, new_text.encode("utf-8"))
         except OSError as e:
             print(f"error: writing rule {raw}: {e}", file=sys.stderr)
+            restore(written)
             return 1
+        written.append((raw, path, text))
         print(f"changed {raw}")
     return 0
+
+
+def restore(written):
+    """Put back each already-written rule from its original text. Reports what could not be restored."""
+    if not written:
+        return
+    restored, failed = [], []
+    for raw, path, original in written:
+        try:
+            manifest.atomic_write_bytes(path, original.encode("utf-8"))
+            restored.append(raw)
+        except OSError as e:
+            failed.append(f"{raw} ({e})")
+    if restored:
+        print(f"restored {', '.join(restored)}", file=sys.stderr)
+    if failed:
+        print(f"error: could not restore {'; '.join(failed)}", file=sys.stderr)
 
 
 if __name__ == "__main__":
