@@ -42,9 +42,6 @@ generalized to drop riposte-specific content.
   `skills/status/scripts/policy_status.py` (called directly, or through its
   `policy-status.sh` wrapper), a deterministic script, so repeat runs
   don't need an LLM to re-read every file.
-- **`/policy:migrate`**: one-time conversion of a repo's old `.policy/<topic>.md` files
-  into the one-rule-per-file layout. It flags anything needing a human decision, such
-  as a rationale shared between rules, instead of guessing.
 
 ## Conventions this plugin assumes
 

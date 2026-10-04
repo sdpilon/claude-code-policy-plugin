@@ -24,7 +24,7 @@ Single project: plugin files at the repository root (`skills/`, `tests/`, `.clau
 
 **Purpose**: Record the test results before any change, so later failures can be attributed to this change
 
-- [ ] T001 Run `uv run python -m unittest discover -s tests` on the untouched `004-remove-migration` branch and note the pass count and any existing failures
+- [X] T001 Run `uv run python -m unittest discover -s tests` on the untouched `004-remove-migration` branch and note the pass count and any existing failures
 
 ---
 
@@ -42,11 +42,11 @@ No foundational tasks. Removal has no shared prerequisites, so the user story ph
 
 ### Implementation for User Story 1
 
-- [ ] T002 [US1] Remove the migration skill with `git rm -r skills/migrate`, then delete any leftover untracked files in that directory with `rm -rf skills/migrate` (covers `skills/migrate/SKILL.md`, `skills/migrate/scripts/migrate_rules.py`, and the local `skills/migrate/scripts/__pycache__/`)
-- [ ] T003 [P] [US1] Remove the `/policy:migrate` bullet at `README.md` line 45, keeping the surrounding list valid
-- [ ] T004 [P] [US1] Remove "migrating" from the description string in `.claude-plugin/plugin.json`; leave `"version": "0.2.0"` unchanged
-- [ ] T005 [P] [US1] Remove "migrating" from the description string in `.claude-plugin/marketplace.json`; leave the version unchanged
-- [ ] T006 [US1] Run the grep in `quickstart.md` step 2 (excluding `specs/001-*` through `specs/003-*`) and fix any remaining match; depends on T002–T005
+- [X] T002 [US1] Remove the migration skill with `git rm -r skills/migrate`, then delete any leftover untracked files in that directory with `rm -rf skills/migrate` (covers `skills/migrate/SKILL.md`, `skills/migrate/scripts/migrate_rules.py`, and the local `skills/migrate/scripts/__pycache__/`)
+- [X] T003 [P] [US1] Remove the `/policy:migrate` bullet at `README.md` line 45, keeping the surrounding list valid
+- [X] T004 [P] [US1] Remove "migrating" from the description string in `.claude-plugin/plugin.json`; leave `"version": "0.2.0"` unchanged
+- [X] T005 [P] [US1] Remove "migrating" from the description string in `.claude-plugin/marketplace.json`; leave the version unchanged
+- [X] T006 [US1] Run the grep in `quickstart.md` step 2 (excluding `specs/001-*` through `specs/003-*`) and fix any remaining match; depends on T002–T005
 
 **Checkpoint**: No live file advertises or defines the migration command (SC-001, SC-003)
 
@@ -60,9 +60,9 @@ No foundational tasks. Removal has no shared prerequisites, so the user story ph
 
 ### Implementation for User Story 2
 
-- [ ] T007 [P] [US2] Remove the migration unit tests with `git rm tests/test_migrate_rules.py`
-- [ ] T008 [US2] Run `uv run python -m unittest discover -s tests`; confirm it passes, that every test passing at T001 still runs, and that no `test_migrate_rules` test is collected; depends on T007
-- [ ] T009 [US2] Run the lint, format, markdown, and shell checks from `quickstart.md` step 6; depends on T003 because the markdown scan must see the edited README
+- [X] T007 [P] [US2] Remove the migration unit tests with `git rm tests/test_migrate_rules.py`
+- [X] T008 [US2] Run `uv run python -m unittest discover -s tests`; confirm it passes, that every test passing at T001 still runs, and that no `test_migrate_rules` test is collected; depends on T007
+- [X] T009 [US2] Run the lint, format, markdown, and shell checks from `quickstart.md` step 6; depends on T003 because the markdown scan must see the edited README
 
 **Checkpoint**: The unit test suite and CI checks pass without any migration test (FR-005, SC-002)
 
@@ -76,7 +76,7 @@ No foundational tasks. Removal has no shared prerequisites, so the user story ph
 
 ### Implementation for User Story 3
 
-- [ ] T010 [US3] Run the diff in `quickstart.md` step 3 against `main` for `specs/001-rule-per-file-restructure`, `specs/002-policy-init-update`, and `specs/003-policy-plugin-gaps`; confirm it prints nothing
+- [X] T010 [US3] Run the diff in `quickstart.md` step 3 against `main` for `specs/001-rule-per-file-restructure`, `specs/002-policy-init-update`, and `specs/003-policy-plugin-gaps`; confirm it prints nothing
 
 **Checkpoint**: Historical spec records are untouched (FR-007, SC-004)
 
@@ -86,8 +86,8 @@ No foundational tasks. Removal has no shared prerequisites, so the user story ph
 
 **Purpose**: Confirm the change set matches the plan and nothing is committed without a request
 
-- [ ] T011 Run `git status` and confirm the changes are limited to the deletions from T002 and T007, the edits from T003–T005, and the new `specs/004-remove-migration/` directory, matching the Source Code list in `plan.md`; leave everything uncommitted
-- [ ] T012 Run `quickstart.md` steps 1 and 4 (file absence and metadata validity with version unchanged)
+- [X] T011 Run `git status` and confirm the changes are limited to the deletions from T002 and T007, the edits from T003–T005, and the new `specs/004-remove-migration/` directory, matching the Source Code list in `plan.md`; leave everything uncommitted
+- [X] T012 Run `quickstart.md` steps 1 and 4 (file absence and metadata validity with version unchanged)
 
 ---
 
