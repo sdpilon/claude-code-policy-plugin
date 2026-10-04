@@ -9,6 +9,16 @@ rejects anything outside that subset rather than guessing.
 - `parse(text: str) -> dict` — splits the leading `---`-delimited block from the rest
   of the file and parses it. Raises `FrontmatterError` (with a line number) on anything
   outside the supported subset.
+  - **Return type**: a `dict` with `str` keys. Each value is a `str` (scalar), a `list` of
+    `str` (inline `[a, b]` or block list), or a `dict` of `str` to `str` (the one nested level,
+    for `verification`).
+  - **Empty values**: an empty scalar (`via:` with nothing after it) is `""`. An empty inline
+    list (`tags: []`) is `[]`.
+  - **No frontmatter**: a text with no leading `---` block raises `FrontmatterError`
+    (`no frontmatter block`), with no line number.
+  - **Block lists**: the `- item` lines must sit at column zero under their key. An indented
+    item indented by two spaces raises `FrontmatterError`, even though the block-list form is otherwise
+    supported. Write block lists unindented, or use the inline form.
 - `validate(fields: dict) -> list[str]` — returns a list of human-readable problems
   (empty list means valid) against the Rule schema in `data-model.md`: missing
   `audience`, an `audience` value outside `{human, agent}`, a `verification.method`

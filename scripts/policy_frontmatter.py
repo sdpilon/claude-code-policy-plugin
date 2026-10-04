@@ -1,8 +1,9 @@
 """Dependency-free read/write for the restricted YAML subset used in rule frontmatter.
 
-Supported: `key: scalar`, inline lists `[a, b]`, block lists (`- item`), and one level of
-nested mapping (indented `key: value`). Anything else raises FrontmatterError rather than
-being guessed at. See specs/001-rule-per-file-restructure/contracts/policy_frontmatter.md.
+Supported: `key: scalar`, inline lists `[a, b]`, block lists (`- item` at column zero under their
+key; an indented item is rejected), and one level of nested mapping (indented `key: value`).
+Anything else raises FrontmatterError rather than being guessed at. See
+specs/001-rule-per-file-restructure/contracts/policy_frontmatter.md.
 """
 
 import json
@@ -52,7 +53,13 @@ def _inline_list(raw, line):
 
 
 def parse(text):
-    """Return the frontmatter of a rule file as a dict. Raises FrontmatterError."""
+    """Return the frontmatter of a rule file as a dict. Raises FrontmatterError.
+
+    Returns a dict with str keys. Each value is a str (scalar), a list of str (inline or
+    block), or a dict of str to str (one nested level, e.g. verification). An empty scalar
+    is "", and an empty inline list is []. Text with no leading --- block raises
+    FrontmatterError("no frontmatter block"). Block list items must be at column zero.
+    """
     lines = text.splitlines()
     if not lines or lines[0].strip() != "---":
         raise FrontmatterError("no frontmatter block")
