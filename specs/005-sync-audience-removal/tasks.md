@@ -292,3 +292,9 @@
 - [X] T089 In `specs/005-sync-audience-removal/quickstart.md` Scenario 11, reword the pass condition "pending is empty because the new wording is already in place once" to say that the added wording is already in `CONTRIBUTING.md`, so no addition is left to apply (quickstart defect 1)
 - [X] T090 In `specs/005-sync-audience-removal/quickstart.md` Scenario 7, either state the shape of a `pending` entry (`path`, `audience`, `kind`, with no text) or drop the sentence that says the removal pairs with an addition, since `sync_status` shows no text for the addition (quickstart defect 2)
 - [X] T091 In `specs/005-sync-audience-removal/quickstart.md` Scenario 11, add a check that `CONTRIBUTING.md` is byte-identical after the refused `record_sync`, for example `cmp` against a saved copy, since the scenario says nothing is written but the hand run checked only the exit code and message (quickstart defect 3)
+
+## Phase 21: Quickstart wording (fifth hand run)
+
+**Purpose**: Quickstart wording defect found by a fresh hand run of Scenarios 1 to 10 on commit 3ca4c54; the product behaved as specified
+
+- [X] T092 In `specs/005-sync-audience-removal/quickstart.md` Scenarios 4 and 9, state the pass condition literally as `pending: []`, instead of "no removal is proposed" or "pending is empty", since the JSON has no removal field and the check is the absence of a `pending` entry (quickstart defect from the hand run)

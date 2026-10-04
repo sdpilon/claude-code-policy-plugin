@@ -58,7 +58,7 @@ Start from Setup, run Scenario 1's edit, and do not remove the sentence or run `
 
 Start from Setup, run Scenario 1's edit, then reword the sentence in `CONTRIBUTING.md`.
 
-**Pass condition**: `stale_in` lists `CONTRIBUTING.md` with `status: "not_found"`, and no removal is proposed for it.
+**Pass condition**: `stale_in` lists `CONTRIBUTING.md` with `status: "not_found"`, and `pending: []`.
 
 ## Scenario 5: absent doc
 
@@ -116,7 +116,7 @@ printf 'Someone hand-edited this.\n' > .claude/rules/001.md
 python3 $PLUGIN/skills/sync/scripts/sync_status.py --dir .policy/rule --root .
 ```
 
-**Pass condition**: `stale_in` includes `.claude/rules/001.md` with `kind: "file"`, `reason: "dropped"`, and `status: "found"` (`CLAUDE.md` may also be listed, since the agent audience was dropped). After the hand edit, that file's status is `not_found` and `pending` is empty.
+**Pass condition**: `stale_in` includes `.claude/rules/001.md` with `kind: "file"`, `reason: "dropped"`, and `status: "found"` (`CLAUDE.md` may also be listed, since the agent audience was dropped). After the hand edit, that file's status is `not_found` and `pending: []`.
 
 ## Scenario 10: statement change needs the review flag
 
