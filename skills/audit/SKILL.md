@@ -49,7 +49,8 @@ files nothing.
   `skipped <ID> (tracked by <url>)`.
 - The audit never closes an issue, and it never edits a rule.
 - It never fails the build because a rule can't be verified. A tracker error (for example, `gh`
-  not authenticated) exits 1 after logging it.
+  not authenticated) is logged against each rule it affects as `error <ID> (tracker: ...)`. The
+  remaining rules are still checked, and the run exits 1 at the end.
 
 ## Dedupe key
 

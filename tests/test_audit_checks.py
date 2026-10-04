@@ -252,5 +252,40 @@ class GitHubTrackerTests(unittest.TestCase):
             self.assertFalse(any("close" in c for c in log.read_text().splitlines()))
 
 
+class TrackerFailureTests(unittest.TestCase):
+    """T027: one tracker failure must not stop the remaining rules from being checked."""
+
+    def test_later_rules_still_run_and_exit_is_1(self):
+        class FailsForOneLabel(FakeTracker):
+            def find_open(self, label):
+                if label == "policy-audit:broken-gate":
+                    raise audit.TrackerError("gh not authenticated")
+                return super().find_open(label)
+
+        with scratch() as d:
+            write_rule(d, "001", "broken-gate")
+            write_rule(d, "002", "deploy-gate")
+            write_rule(d, "003", "lint-clean")
+            tracker = FailsForOneLabel()
+            lines = []
+            code = audit.run_audit(
+                audit.load_rules(Path(d)),
+                {
+                    "broken-gate": lambda: False,
+                    "deploy-gate": lambda: False,
+                    "lint-clean": lambda: True,
+                },
+                tracker,
+                out=lines.append,
+            )
+            self.assertEqual(code, 1)
+            self.assertTrue(any(l.startswith("error 001") for l in lines), lines)
+            self.assertTrue(any(l.startswith("filed 002") for l in lines), lines)
+            self.assertIn("pass 003", lines)
+            self.assertEqual(
+                [i["title"] for i in tracker.created], ["Policy check failing: deploy-gate"]
+            )
+
+
 if __name__ == "__main__":
     unittest.main()

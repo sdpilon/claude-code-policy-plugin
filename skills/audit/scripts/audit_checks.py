@@ -121,6 +121,7 @@ def run_audit(rules, checks, tracker, out=print):
 
     verdicts = {}
     tracked = {}  # via -> issue URL, once known
+    tracker_failed = {}  # via -> tracker error text, for checks the tracker could not handle
     for rule_id, fields in rules:
         rid = ids.format_id(rule_id)
         if fields.get("defect"):
@@ -141,6 +142,9 @@ def run_audit(rules, checks, tracker, out=print):
         if via in tracked:
             out(f"skipped {rid} (tracked by {tracked[via]})")
             continue
+        if via in tracker_failed:
+            out(f"error {rid} (tracker failed earlier for {via})")
+            continue
         label = f"{LABEL_PREFIX}{via}"
         try:
             existing = tracker.find_open(label)
@@ -151,10 +155,13 @@ def run_audit(rules, checks, tracker, out=print):
             title, body = issue_text(kind, via, by_via[via], detail)
             tracked[via] = tracker.create(title, body, label)
         except TrackerError as e:
-            print(f"error: tracker: {e}", file=sys.stderr)
-            return 1
+            # Keep checking the other rules; the run exits 1 at the end.
+            tracker_failed[via] = str(e)
+            print(f"error: tracker for {via}: {e}", file=sys.stderr)
+            out(f"error {rid} (tracker: {e})")
+            continue
         out(f"filed {rid} {tracked[via]}")
-    return 0
+    return 1 if tracker_failed else 0
 
 
 def main(argv):
