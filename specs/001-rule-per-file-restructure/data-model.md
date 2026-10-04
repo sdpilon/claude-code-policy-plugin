@@ -29,6 +29,7 @@ integer everywhere else — padding is a filename/display concern only, applied 
 | rationale | body | prose paragraph | yes | Self-contained; may end with `See also [048](048.md)[, [049](049.md)...]` links (zero-padded, matching the target's own filename) to related rules instead of restating shared context. |
 
 **Validation rules**:
+
 - `id` must be unique across the entire tree at the moment a new rule is written (FR-002,
   FR-003). Enforced by `scripts/policy_ids.py`'s allocate-and-recheck, not by convention.
 - `audience` must be present and non-empty; a rule file missing it is a defect

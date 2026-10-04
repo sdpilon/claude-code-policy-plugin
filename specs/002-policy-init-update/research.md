@@ -9,6 +9,7 @@ Each decision below resolves a technical choice in `plan.md`. No NEEDS CLARIFICA
 **Rationale**: Standard library, collision-resistant for this purpose, and stable across Python versions.
 
 **Alternatives considered**:
+
 - MD5: available, but a known-weak digest; there's no reason to use it when SHA-256 costs nothing here.
 - Git blob hash: would tie the mechanism to git and to the repo's object format. Projects may not use git, and the spec doesn't require it.
 
@@ -19,6 +20,7 @@ Each decision below resolves a technical choice in `plan.md`. No NEEDS CLARIFICA
 **Rationale**: FR-004 and SC-004 require that a CRLF checkout of an unmodified file is not reported as customized. Normalizing only line endings is the minimum change that satisfies that. Stripping trailing whitespace would hide real edits.
 
 **Alternatives considered**:
+
 - Hash raw bytes: produces false customizations on Windows checkouts with `core.autocrlf`.
 - Normalize all whitespace: hides genuine edits and is harder to reason about.
 
@@ -41,6 +43,7 @@ Each decision below resolves a technical choice in `plan.md`. No NEEDS CLARIFICA
 ## 5. Exit codes
 
 **Decision**:
+
 - `0`: clean run (no drift), or init on an already-initialized project.
 - `1`: drift: at least one file is customized or missing (FR-012).
 - `2`: fail closed: manifest missing or unparseable, or unsupported `format_version` (FR-011). Matches the `fail()` convention in `skills/add/scripts/add_rule.py`.

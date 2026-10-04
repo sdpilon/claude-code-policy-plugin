@@ -31,7 +31,7 @@ Shared, dependency-free ID allocation. Used as a library by `add_rule.py` and
 
 ## CLI (debugging / ad hoc use)
 
-```
+```text
 python3 scripts/policy_ids.py highest --dir .policy/rule --retired-dir .policy/retired
 ```
 

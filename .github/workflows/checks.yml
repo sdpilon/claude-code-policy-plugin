@@ -6,7 +6,7 @@ on:
     branches: [main]
 
 jobs:
-  lint-and-test:
+  lint-format-test:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
@@ -24,6 +24,25 @@ jobs:
 
       - name: Format check
         run: uv run ruff format --check .
+
+      - name: Markdown lint
+        run: git ls-files -z '*.md' ':!.specify/**' ':!.claude/**' ':!.claude-plugin/**' | xargs -0 uv run pymarkdown scan
+
+      - name: Markdown format check
+        run: |
+          md_files() { git ls-files -z '*.md' ':!.specify/**' ':!.claude/**' ':!.claude-plugin/**'; }
+          before=$(md_files | xargs -0 git hash-object)
+          md_files | xargs -0 uv run pymarkdown fix
+          if [ "$before" != "$(md_files | xargs -0 git hash-object)" ]; then
+            echo "Markdown is not formatted; run pymarkdown fix locally." >&2
+            exit 1
+          fi
+
+      - name: Shell lint
+        run: git ls-files -z '*.sh' ':!.specify/**' ':!.claude/**' ':!.claude-plugin/**' | xargs -0 uv run shellcheck
+
+      - name: Shell format check
+        run: git ls-files -z '*.sh' ':!.specify/**' ':!.claude/**' ':!.claude-plugin/**' | xargs -0 uv run shfmt -i 2 -d
 
       - name: Unit tests
         run: uv run python -m unittest discover -s tests

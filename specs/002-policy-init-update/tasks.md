@@ -37,6 +37,7 @@
 **Purpose**: The shared module every skill script imports. No user story can start until this phase is green.
 
 **Constraints quoted from `data-model.md` and `contracts/manifest.md`**:
+
 - `format_version` is an integer; this feature writes `1`; a value greater than `1` is "needs a newer plugin"; missing or non-integer is "corrupt".
 - `sha256` is "64 lowercase hex characters".
 - `files` keys are "project-relative paths using forward slashes".
