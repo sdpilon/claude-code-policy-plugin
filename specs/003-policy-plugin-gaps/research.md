@@ -96,21 +96,28 @@ fake tracker.
 already handles auth and is what the consumer's token scope is documented against
 (`skills/audit/SKILL.md`, Token scopes).
 
-## R7. Plugin root discovery (US5, FR-017) — OPEN
+## R7. Plugin root discovery (US5, FR-017) — DECIDED
 
-**Question**: can a skill body reference the plugin root without a search? The installed
-plugins use `CLAUDE_PLUGIN_ROOT` in hook commands, but it is not verified for skill bodies.
+**Question**: can a skill body reference the plugin root without a search?
 
-**Plan**: before implementing, check the Claude Code plugin docs (or `claude-code-guide`) for
-whether `${CLAUDE_PLUGIN_ROOT}` is substituted in skill content. Then pick one of:
+**Evidence**: the installed `plugin-dev` plugin's `plugin-structure` skill documents
+`${CLAUDE_PLUGIN_ROOT}` for component files, including skills ("Reference scripts at:
+`${CLAUDE_PLUGIN_ROOT}/scripts/helper.py`"). It also says the variable is available as an
+environment variable in executed scripts. Hook and MCP configs use it the same way.
 
-- If substituted: `SKILL.md` uses `${CLAUDE_PLUGIN_ROOT}/skills/<skill>/scripts/...`. Document
-  that and remove the "two levels up" rule from `README.md`.
-- If not: keep the documented rule (base directory from the skill loader, two levels up) and
-  add `scripts/plugin_root.py`, which prints the root by walking up from its own path. Skills
-  then call it by a fixed relative path.
+**Decision**: skills reference scripts as `${CLAUDE_PLUGIN_ROOT}/skills/<skill>/scripts/...`.
+Each skill and the README also state the fallback: if the variable is not set in the shell
+that runs a script, the plugin root is the folder two levels above the skill's base directory.
+`scripts/plugin_root.py` is not needed.
 
-Either way, FR-017 needs one documented method. The task list includes a verification step.
+**Not verified here**: that the harness substitutes the variable inside SKILL.md text, as
+opposed to exposing it only to executed scripts. The fallback covers that case. A check
+against a real session would settle it, and it is worth doing before relying on the variable
+alone.
+
+**Alternatives considered**: a `scripts/plugin_root.py` that walks up from its own path. It
+would need a fixed relative path to start, which is the problem FR-017 describes, so it would
+not remove the discovery step.
 
 ## R8. Edit skill trigger (constitution, Development Workflow)
 

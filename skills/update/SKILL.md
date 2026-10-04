@@ -8,7 +8,7 @@ description: Refreshes the policy plugin's shipped templates in a repository tha
 Run from the repository root:
 
 ```sh
-python3 <plugin>/skills/update/scripts/update_policy.py
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/update/scripts/update_policy.py
 ```
 
 The script reads `.policy/manifest.json` and compares each tracked file with the plugin's current

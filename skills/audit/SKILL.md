@@ -10,11 +10,12 @@ Runs in CI, non-interactively. It runs the checks for the rules whose `verificat
 `scripts/audit_checks.py`. The checks themselves live in the consuming project's own registry
 file, which encodes that project's checks. A check proves presence, never sufficiency.
 
-Run from the repository root. `<plugin>` is the plugin's root directory, the folder that contains
-`skills/` and `scripts/`.
+Run from the repository root. `${CLAUDE_PLUGIN_ROOT}` is the plugin's root directory, the folder
+that contains `skills/` and `scripts/`. If it is not set in your shell, use the folder two levels
+above this skill's base directory.
 
 ```text
-python3 <plugin>/skills/audit/scripts/audit_checks.py --registry <path/to/checks.py> [--policy-dir .policy] [--tracker github|none]
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/audit/scripts/audit_checks.py --registry <path/to/checks.py> [--policy-dir .policy] [--tracker github|none]
 ```
 
 ## The registry

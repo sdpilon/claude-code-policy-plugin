@@ -14,7 +14,7 @@ proposes changes; it never writes without approval.
 1. **Get the mechanical state.** Run:
 
    ```sh
-   python3 <plugin>/skills/sync/scripts/sync_status.py --dir .policy/rule
+   python3 ${CLAUDE_PLUGIN_ROOT}/skills/sync/scripts/sync_status.py --dir .policy/rule
    ```
 
    Each row gives `id`, `audience`, `targets`, `changed`, and an optional `error`.
@@ -27,7 +27,7 @@ proposes changes; it never writes without approval.
 5. **Wait for approval** (Constitution Principle III). Re-check the target files are unchanged
    since you read them before applying anything.
 6. **Apply and record.** After approval, make the edits. Then record the rules you applied
-   with `python3 <plugin>/skills/sync/scripts/record_sync.py <ID> [<ID> ...]`, passing only the
+   with `python3 ${CLAUDE_PLUGIN_ROOT}/skills/sync/scripts/record_sync.py <ID> [<ID> ...]`, passing only the
    IDs that were approved and applied. The script writes each rule's `synced_hash` and leaves
    the rest of the file unchanged, so the next run reports those rules as unchanged. It exits
    2 without writing anything if an ID is missing.

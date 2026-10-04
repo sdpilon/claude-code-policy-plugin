@@ -9,8 +9,9 @@ A rule is one file, `.policy/rule/<id>.md`. This skill changes fields on existin
 `scripts/edit_rule.py`. It never edits the file by hand, so `modified` is always set and the
 statement check always runs.
 
-Run from the repository root. `<plugin>` is the plugin's root directory, the folder that contains
-`skills/` and `scripts/`. The loader's base directory for this skill is `<plugin>/skills/edit`.
+Run from the repository root. `${CLAUDE_PLUGIN_ROOT}` is the plugin's root directory, the folder
+that contains `skills/` and `scripts/`. If it is not set in your shell, use the folder two levels
+above this skill's base directory.
 
 ## Editable fields
 
@@ -33,7 +34,7 @@ Run from the repository root. `<plugin>` is the plugin's root directory, the fol
 2. **Preview first.** Run:
 
    ```text
-   python3 <plugin>/skills/edit/scripts/edit_rule.py --preview --set <field>=<value> [--set ...] <ID> [<ID> ...]
+   python3 ${CLAUDE_PLUGIN_ROOT}/skills/edit/scripts/edit_rule.py --preview --set <field>=<value> [--set ...] <ID> [<ID> ...]
    ```
 
    It prints the proposed change for each rule and writes nothing. A rejected rule prints its
