@@ -56,7 +56,9 @@ rejected. Whitespace in a wording is collapsed to single spaces.
    batch without saying so.
 4. **Apply.** Run the same command without `--preview`. Every target is validated first. If any
    target is rejected, nothing is written and the command exits 2. Report each `changed` and
-   `unchanged` line.
+   `unchanged` line. A statement change also needs `--reviewed-wording`. Pass it only after the
+   person has approved every `review wording.<audience>` line from the preview. Without the flag,
+   the script exits 2 and writes nothing.
 5. **Tell the person what comes next.** An edited rule now reads as changed in the sync status
    until its derived docs are synced. Say so, and offer to run the sync skill.
 
@@ -78,6 +80,8 @@ edit per rule.
 
 - Never edit a rule file by hand, and never edit `synced_hash`.
 - Never write to derived docs (`CONTRIBUTING.md`, `CLAUDE.md`, `.claude/rules/`) from this skill.
+- An audience drop is rejected when that audience's wording has an edit sync has not recorded.
+  Run sync first, so the wording change is recorded, or revert the wording. Then drop the audience.
 - A statement with more than one sentence or modal verb is rejected. Rewrite it as one sentence
   with one modal, then preview again.
 - Don't commit unless the person asks.

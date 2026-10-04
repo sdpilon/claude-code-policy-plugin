@@ -27,12 +27,16 @@ generalized to drop riposte-specific content.
 - **`/policy:edit`**: changes the title, tags, audience, verification, statement, rationale,
   or a per-audience wording of one or more existing rules. Previews first, lists each
   audience's wording for review when the statement changes, then applies all-or-none, and
-  sets `modified`. Backed by `skills/edit/scripts/edit_rule.py`.
+  sets `modified`. A statement change needs `--reviewed-wording`, passed only after each
+  audience wording is approved; without it the script writes nothing. An audience drop is
+  rejected while that audience's wording has an edit sync has not recorded. Sync the wording
+  first, or revert it. Backed by `skills/edit/scripts/edit_rule.py`.
 - **`/policy:sync`**: checks whether `CONTRIBUTING.md` and the agent-operational doc
   still match `.policy/rule/`, using each rule's `audience` to pick its targets and each
   audience's `wording` as the text to write. Proposes removal of wording last written for an
-  audience that was dropped, only when that text matches exactly once. Text that was reworded
-  by hand is reported, never removed. Every proposed addition states its placement. Propagates
+  audience that was dropped, or reworded while still targeted, only when that text matches
+  exactly once. A reworded audience's removal comes with an addition of the new wording. Text
+  that was reworded by hand is reported, never removed. Every proposed addition states its placement. Propagates
   only approved changes, records each applied rule's `synced_hash` and `synced_wording`
   through `skills/sync/scripts/record_sync.py`, and skips rules whose content hasn't changed
   since the last sync. Prose that already exists in a repo's docs is copied into rule files

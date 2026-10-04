@@ -304,5 +304,82 @@ class AudienceChangeRecordTests(unittest.TestCase):
             self.assertFalse(sync_rows(d, Path(d))[0]["changed"])
 
 
+NEW_HUMAN = "Secrets MUST NOT leak into CI logs."
+
+
+class RewordedAndReasonTests(unittest.TestCase):
+    """FR-001, FR-002, R9 and R12: rewording a still-targeted audience, and the reason field."""
+
+    def test_reworded_audience_is_found_with_reason_reworded(self):
+        with scratch() as d:
+            write_rule(
+                d,
+                ["human", "agent"],
+                {"human": NEW_HUMAN, "agent": AGENT},
+                {"human": HUMAN, "agent": AGENT},
+            )
+            root = Path(d) / "docs"
+            root.mkdir()
+            (root / "CONTRIBUTING.md").write_text(f"Intro.\n\n{HUMAN}\n", encoding="utf-8")
+            row = sync_rows(d, root)[0]
+            self.assertTrue(row["changed"])
+            self.assertEqual(len(row["stale_in"]), 1)
+            entry = row["stale_in"][0]
+            self.assertEqual(entry["path"], "CONTRIBUTING.md")
+            self.assertEqual(entry["audience"], "human")
+            self.assertEqual(entry["reason"], "reworded")
+            self.assertEqual(entry["status"], "found")
+            self.assertEqual(entry["text"], HUMAN)
+
+    def test_reworded_text_hand_edited_is_not_found(self):
+        with scratch() as d:
+            write_rule(
+                d,
+                ["human", "agent"],
+                {"human": NEW_HUMAN, "agent": AGENT},
+                {"human": HUMAN, "agent": AGENT},
+            )
+            root = Path(d) / "docs"
+            root.mkdir()
+            (root / "CONTRIBUTING.md").write_text(
+                "Secrets must never reach CI logs.\n", encoding="utf-8"
+            )
+            entry = sync_rows(d, root)[0]["stale_in"][0]
+            self.assertEqual((entry["reason"], entry["status"]), ("reworded", "not_found"))
+
+    def test_reworded_text_appearing_twice_is_ambiguous(self):
+        with scratch() as d:
+            write_rule(
+                d,
+                ["human", "agent"],
+                {"human": NEW_HUMAN, "agent": AGENT},
+                {"human": HUMAN, "agent": AGENT},
+            )
+            root = Path(d) / "docs"
+            root.mkdir()
+            (root / "CONTRIBUTING.md").write_text(f"{HUMAN}\n\n{HUMAN}\n", encoding="utf-8")
+            entry = sync_rows(d, root)[0]["stale_in"][0]
+            self.assertEqual(entry["status"], "ambiguous")
+
+    def test_reworded_agent_only_file_is_found_on_exact_content(self):
+        with scratch() as d:
+            write_rule(d, ["agent"], {"agent": "Print no secrets, ever."}, {"agent": AGENT})
+            root = Path(d) / "docs"
+            rules = root / ".claude" / "rules"
+            rules.mkdir(parents=True)
+            (rules / "001.md").write_text(AGENT + "\n", encoding="utf-8")
+            file_entry = next(e for e in sync_rows(d, root)[0]["stale_in"] if e["kind"] == "file")
+            self.assertEqual((file_entry["reason"], file_entry["status"]), ("reworded", "found"))
+
+    def test_dropped_entries_carry_reason_dropped(self):
+        with scratch() as d:
+            write_rule(d, ["agent"], {"agent": AGENT}, {"human": HUMAN, "agent": AGENT})
+            root = Path(d) / "docs"
+            root.mkdir()
+            (root / "CONTRIBUTING.md").write_text(HUMAN + "\n", encoding="utf-8")
+            entry = next(e for e in sync_rows(d, root)[0]["stale_in"] if e["audience"] == "human")
+            self.assertEqual(entry["reason"], "dropped")
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -113,6 +113,31 @@ def apply_set(fields, rest, rule_id, key, value):
     return fields, rest
 
 
+def check_drops_recorded(before_fields, new_audience):
+    """Reject an audience drop that would discard a wording edit sync has not recorded (FR-012).
+
+    A drop is refused only when a recorded synced_wording entry exists for the audience and its
+    current wording differs from it. An audience never recorded, or with equal text, drops as before.
+    """
+    wording = before_fields.get("wording") if isinstance(before_fields.get("wording"), dict) else {}
+    synced = (
+        before_fields.get("synced_wording")
+        if isinstance(before_fields.get("synced_wording"), dict)
+        else {}
+    )
+    old_audience = (
+        before_fields.get("audience") if isinstance(before_fields.get("audience"), list) else []
+    )
+    for dropped in old_audience:
+        if dropped in new_audience or dropped not in synced or dropped not in wording:
+            continue
+        if wording[dropped] != synced[dropped]:
+            raise ValueError(
+                f"audience {dropped} cannot be dropped: its wording has an edit sync has not recorded. "
+                f"Run sync to record it first, or revert wording.{dropped}"
+            )
+
+
 def edit_text(text, rule_id, sets):
     """Return (new_text, changed_fields). Pure: no I/O."""
     _front, rest = split_document(text)
@@ -125,6 +150,7 @@ def edit_text(text, rule_id, sets):
     for key, _ in sets:
         if key.startswith("wording.") and key.split(".", 1)[1] not in audience:
             raise ValueError(f"{key} is set but {key.split('.', 1)[1]} is not in audience")
+    check_drops_recorded(before_fields, audience)
     if isinstance(fields.get("wording"), dict):
         # Wording for an audience the rule no longer targets is dropped. Its last-written text stays
         # in synced_wording, which is what sync uses to find it.
@@ -166,11 +192,21 @@ def main(argv):
     p.add_argument("--dir", default=".policy/rule")
     p.add_argument("--preview", action="store_true")
     p.add_argument("--set", dest="sets", action="append", default=[], metavar="FIELD=VALUE")
+    p.add_argument(
+        "--reviewed-wording",
+        action="store_true",
+        help="required for a statement change: the person has approved each audience wording",
+    )
     p.add_argument("ids", nargs="+", metavar="ID")
     args = p.parse_args(argv)
     sets = parse_sets(args.sets)
     if not sets:
         fail("at least one --set is required")
+    if not args.preview and not args.reviewed_wording and any(k == "statement" for k, _ in sets):
+        fail(
+            "a statement change needs --reviewed-wording, passed only after each audience wording "
+            "is approved; nothing was written"
+        )
     rule_dir = Path(args.dir)
 
     # Phase 1: load and validate every target. Nothing is written in this phase.

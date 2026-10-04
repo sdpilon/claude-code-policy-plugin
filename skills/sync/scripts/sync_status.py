@@ -66,11 +66,17 @@ def word_pattern(text):
     return re.compile(WORD_SPLIT_RE.pattern.join(re.escape(w) for w in words))
 
 
-def find_stale(root, rule_id, audience, text):
-    """Search every derived doc for one dropped audience's stored wording."""
+def find_stale(root, rule_id, audience, text, reason):
+    """Search every derived doc for one audience's recorded wording (dropped or reworded)."""
     results = []
     for rel_path, kind in stale_locations_for(audience, rule_id):
-        entry = {"path": rel_path, "audience": audience, "kind": kind, "text": text}
+        entry = {
+            "path": rel_path,
+            "audience": audience,
+            "kind": kind,
+            "reason": reason,
+            "text": text,
+        }
         doc = root / rel_path
         if not doc.is_file():
             entry["status"] = "absent"
@@ -134,9 +140,15 @@ def main(argv):
         missing_wording = [a for a in active if a not in wording]
         stale_in = []
         for audience_key in AUDIENCE_ORDER:
-            if audience_key in synced_wording and audience_key not in active:
+            if audience_key not in synced_wording:
+                continue
+            if audience_key not in active:
                 stale_in += find_stale(
-                    doc_root, rule_id, audience_key, synced_wording[audience_key]
+                    doc_root, rule_id, audience_key, synced_wording[audience_key], "dropped"
+                )
+            elif audience_key in wording and wording[audience_key] != synced_wording[audience_key]:
+                stale_in += find_stale(
+                    doc_root, rule_id, audience_key, synced_wording[audience_key], "reworded"
                 )
         row = {
             "id": rule_id,

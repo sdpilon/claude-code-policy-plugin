@@ -31,12 +31,18 @@ written for each audience, so an audience that is later dropped can be found and
 4. **Propose, don't apply.** For each changed rule, draft the change for each item, and show the
    full proposal: the file, the old and new text, the rule ID it comes from, the position, and the
    rule's `current_hash` as `sync_status` reported it.
-   - **Removals** come from `stale_in`, one entry per dropped audience location. Propose a removal
+   - **Removals** come from `stale_in`, one entry per stale location. `reason` says why it is
+     stale: `dropped` means the audience left `audience`, and `reworded` means it is still targeted
+     with changed wording. Propose a removal
      only when `status` is `"found"`. Show the matched `text` and the one adjoining newline or
      space that goes with it, so no blank gap is left. Never propose a removal for `not_found`,
      `ambiguous`, or `absent`. Report those by document and rule ID with the reason:
      `not_found` means the text was reworded by hand, `ambiguous` means it appears more than once,
      and `absent` means the document does not exist.
+   - **Reworded pairs.** Each `reworded` removal is proposed together with an addition of the
+     current `wording` for that audience to the same doc, placed as the proposal states (FR-002).
+     For a `reworded` `kind: "file"` location, the addition overwrites `.claude/rules/<id>.md`, and
+     only when its `status` is `found` (R12). A `dropped` removal is proposed alone.
    - **Additions** come from `targets`, which lists the docs for the current audiences (never infer
      them from `audience`). Each addition states the target section and the position within it
      (FR-008). Its text is that rule's `wording` for that document's audience, copied verbatim

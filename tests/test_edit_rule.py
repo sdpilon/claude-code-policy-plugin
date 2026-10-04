@@ -1,3 +1,4 @@
+import re
 import unittest
 from pathlib import Path
 
@@ -61,6 +62,7 @@ class EditRuleTests(unittest.TestCase):
                 str(rule_dir),
                 "--set",
                 "statement=Secrets MUST NOT appear in build logs.",
+                "--reviewed-wording",
                 "001",
             )
             self.assertEqual(code, 0)
@@ -89,6 +91,7 @@ class EditRuleTests(unittest.TestCase):
                 str(rule_dir),
                 "--set",
                 "statement=Secrets MUST NOT leak and MAY be logged.",
+                "--reviewed-wording",
                 "001",
             )
             self.assertEqual(code, 2)
@@ -170,6 +173,7 @@ class BulkEditTests(unittest.TestCase):
                 str(rule_dir),
                 "--set",
                 "statement=Secrets MUST NOT appear in build logs.",
+                "--reviewed-wording",
                 "001",
                 "002",
             )
@@ -323,11 +327,66 @@ class WordingEditTests(unittest.TestCase):
                 "--preview",
                 "--set",
                 "statement=Secrets MUST NOT appear in build logs.",
+                "--reviewed-wording",
                 "001",
             )
             self.assertEqual(code, 0)
             self.assertIn("review wording.agent: Never print secrets to CI output.", out)
             self.assertIn("review wording.human: Secrets MUST NOT appear in CI logs.", out)
+
+
+class DropAndReviewTests(unittest.TestCase):
+    make_both = WordingEditTests.make_both
+
+    """FR-012: a drop that would discard an unrecorded wording edit is refused. FR-009: review flag."""
+
+    def test_drop_is_rejected_after_an_unrecorded_wording_edit(self):
+        with scratch() as d:
+            rule_dir, path = self.make_both(d)
+            run(
+                EDIT, "--dir", str(rule_dir), "--set", "wording.human=Secrets MUST NOT leak.", "001"
+            )
+            before = path.read_bytes()
+            code, out, _ = run(EDIT, "--dir", str(rule_dir), "--set", "audience=agent", "001")
+            self.assertEqual(code, 2)
+            self.assertIn("audience human cannot be dropped", out)
+            self.assertIn("Run sync", out)
+            self.assertEqual(path.read_bytes(), before)
+
+    def test_drop_is_allowed_when_wording_matches_what_was_recorded(self):
+        with scratch() as d:
+            rule_dir, _path = self.make_both(d)
+            code, out, _ = run(EDIT, "--dir", str(rule_dir), "--set", "audience=agent", "001")
+            self.assertEqual(code, 0, out)
+            self.assertIn("changed 001", out)
+
+    def test_drop_is_allowed_for_an_audience_never_recorded(self):
+        with scratch() as d:
+            rule_dir, path = self.make_both(d)
+            text = re.sub(r"synced_wording:\n(  .*\n)+", "", path.read_text(encoding="utf-8"))
+            path.write_text(text, encoding="utf-8")
+            wording_edit = run(
+                EDIT, "--dir", str(rule_dir), "--set", "wording.human=Changed.", "001"
+            )
+            self.assertEqual(wording_edit[0], 0, wording_edit[1])
+            code, out, _ = run(EDIT, "--dir", str(rule_dir), "--set", "audience=agent", "001")
+            self.assertEqual(code, 0, out)
+
+    def test_statement_change_without_review_flag_writes_nothing(self):
+        with scratch() as d:
+            rule_dir, path = make_rule(d)
+            before = path.read_bytes()
+            code, _out, err = run(
+                EDIT,
+                "--dir",
+                str(rule_dir),
+                "--set",
+                "statement=Secrets MUST NOT appear in build logs.",
+                "001",
+            )
+            self.assertEqual(code, 2)
+            self.assertIn("--reviewed-wording", err)
+            self.assertEqual(path.read_bytes(), before)
 
 
 if __name__ == "__main__":
