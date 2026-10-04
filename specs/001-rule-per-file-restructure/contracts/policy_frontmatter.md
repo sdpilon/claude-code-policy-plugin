@@ -20,7 +20,7 @@ rejects anything outside that subset rather than guessing.
 
 ## CLI (debugging / ad hoc use)
 
-```
+```text
 python3 scripts/policy_frontmatter.py read <rule-file>
 python3 scripts/policy_frontmatter.py validate <rule-file>
 ```

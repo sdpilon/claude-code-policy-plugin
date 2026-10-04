@@ -6,10 +6,24 @@ dependencies = []
 
 [dependency-groups]
 dev = [
+    "pymarkdownlnt>=0.9.40",
     "ruff>=0.16.10",
+    "shellcheck-py>=0.11.0.1",
+    "shfmt-py>=4.2.0",
 ]
 
 [tool.ruff]
 # Spec Kit, Superpowers, and Claude Code own these trees; they aren't ours to lint or format.
 extend-exclude = [".specify", ".superpowers", ".claude", ".claude-plugin"]
 line-length = 100
+
+[tool.pymarkdown]
+extensions.front-matter.enabled = true
+# Prose wrapping is a writing choice here, not a defect; line length is not checked.
+plugins.md013.enabled = false
+# Every heading in this repo is ATX (#), so fix the style rather than infer it from front matter.
+plugins.md003.style = "atx"
+# Rule files carry their title in front matter and repeat it as the H1, by design.
+plugins.md025.enabled = false
+# Templates use <angle-bracket> placeholders that are meant to be filled in.
+plugins.md033.enabled = false

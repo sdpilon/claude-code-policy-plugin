@@ -5,7 +5,7 @@ rule. It is the operation that writes the tombstone FR-004 relies on.
 
 ## CLI
 
-```
+```text
 python3 skills/retire/scripts/retire_rule.py \
   --id 66 \
   --reason "<why it was retired>" \

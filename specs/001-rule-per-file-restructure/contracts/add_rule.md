@@ -7,7 +7,7 @@ part: allocate an ID and write the file.
 
 ## CLI
 
-```
+```text
 python3 skills/add/scripts/add_rule.py \
   --statement "<subject> MUST <requirement>." \
   --title "<short human name>" \

@@ -7,7 +7,7 @@ not on rediscovering *whether* one is needed.
 
 ## CLI
 
-```
+```text
 python3 skills/sync/scripts/sync_status.py --dir .policy/rule
 ```
 
