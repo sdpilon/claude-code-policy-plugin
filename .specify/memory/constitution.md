@@ -28,11 +28,25 @@ tombstones, and MUST re-check for collision immediately before writing.
 An ID MUST NOT be reused, even after its rule is deleted. A retired rule MUST leave a
 frontmatter-only tombstone at `.policy/retired/<id>.md`, which counts toward allocation.
 
-Each rule MUST be one sentence with exactly one modal verb (MUST / SHOULD / MUST NOT / MAY).
+Each rule's formal statement MUST be one sentence with exactly one modal verb (MUST / SHOULD /
+MUST NOT / MAY).
+
+A rule MAY carry one audience-specific wording per audience it targets, stored in the rule file.
+Each wording MUST be a single line, with runs of whitespace collapsed at write time. Each wording
+MUST be approved by a person at add or edit time, under the checkpoint in Principle III. Editing a
+rule's formal statement MUST prompt review of each audience wording. A derived document MUST
+receive only the wording for its own audience, copied verbatim. The wording last written to each
+derived document MUST be recorded in the rule file. Sync MUST match a stored wording in a derived
+document with whitespace normalized, and MUST treat a match as removable only when it occurs
+exactly once.
 
 Rationale: drift between a source and its derived docs is silent, and no test catches it.
 One rule per file keeps diffs and ownership local and removes the arbitrary topic decision.
 Stable, never-reused IDs keep references and drift detection meaningful over time.
+Semantic equivalence between wordings is judged once, at add or edit time, by the agent drafting
+and the person approving. Exact matching, with whitespace normalized, keeps detection and removal
+deterministic. Audience-specific wordings let each derived doc read as prose written for its
+audience.
 
 ### III. Checkpointed Steps
 
@@ -101,4 +115,4 @@ commit. Versioning follows semantic versioning: MAJOR for removing or redefining
 MINOR for adding a principle or section or materially expanding one, PATCH for clarifications
 and wording.
 
-**Version**: 2.0.1 | **Ratified**: 2026-10-02 | **Last Amended**: 2026-10-02
+**Version**: 2.2.0 | **Ratified**: 2026-10-02 | **Last Amended**: 2026-10-04
