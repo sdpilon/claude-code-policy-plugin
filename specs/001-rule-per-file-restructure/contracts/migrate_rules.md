@@ -6,7 +6,7 @@ the skill to walk the user through afterward.
 
 ## CLI
 
-```
+```text
 python3 skills/migrate/scripts/migrate_rules.py \
   --source-dir .policy \
   --dest-dir .policy/rule \

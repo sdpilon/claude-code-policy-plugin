@@ -19,6 +19,7 @@ to need a general-purpose YAML parser. This keeps Constitution Principle IV's
 determinism cheap rather than trading one dependency-free script for a dependent one.
 
 **Alternatives considered**:
+
 - *PyYAML*: full YAML support, but a new hard dependency for every consumer; rejected
   as disproportionate to the five fields actually used.
 - *`tomllib`* (stdlib since Python 3.11): avoids a dependency, but changes the
@@ -42,6 +43,7 @@ sequential feature numbering. Already resolved during brainstorming; recorded he
 to anchor the script design.
 
 **Alternatives considered**:
+
 - *Persisted counter file*: removes the scan, but introduces a new piece of state to
   keep correct and git-mergeable; rejected since the proven tool in this very repo
   doesn't need one.
@@ -59,6 +61,7 @@ skill wrapper would be inconsistent with that pattern and harder for a consuming
 to find.
 
 **Alternatives considered**:
+
 - *Standalone script, no skill*: rejected for discoverability, per above.
 - *Folding migration logic into `add`*: rejected — migration is a one-time,
   whole-tree operation with different inputs/outputs than adding a single rule, and
@@ -78,6 +81,7 @@ the wrong doc got updated. `unittest` adds no new dependency, matching Technical
 Context's constraint.
 
 **Alternatives considered**:
+
 - *pytest*: nicer ergonomics, but a new dependency for a small, stdlib-sufficient test
   surface; rejected.
 - *No automated tests*: matches the status quo, but the status quo has never had logic

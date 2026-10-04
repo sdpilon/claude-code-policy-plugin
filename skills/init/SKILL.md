@@ -1,6 +1,6 @@
 ---
 name: init
-description: Bootstraps the .policy/ layer in a repository that doesn't have one yet: creates rule/ and retired/, a starter README, and the manifest that /policy:update relies on. Use when the user asks to set up, initialize, or bootstrap policy in a repo. Not for adding a rule (use /policy:add) or for refreshing templates in an existing project (use /policy:update).
+description: "Bootstraps the .policy/ layer in a repository that doesn't have one yet: creates rule/ and retired/, a starter README, and the manifest that /policy:update relies on. Use when the user asks to set up, initialize, or bootstrap policy in a repo. Not for adding a rule (use /policy:add) or for refreshing templates in an existing project (use /policy:update)."
 ---
 
 # Initializing policy in a repository
