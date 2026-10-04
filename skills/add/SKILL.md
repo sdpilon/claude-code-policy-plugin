@@ -26,7 +26,7 @@ append to an existing file.
    rationale first, and wait for a go-ahead):
 
    ```sh
-   python3 <plugin>/skills/add/scripts/add_rule.py \
+   python3 ${CLAUDE_PLUGIN_ROOT}/skills/add/scripts/add_rule.py \
      --statement "<subject> MUST <requirement>." --title "<title>" \
      --audience human,agent --verification-method ci-checked \
      --verification-via "<check name>" --rationale "<paragraph>"

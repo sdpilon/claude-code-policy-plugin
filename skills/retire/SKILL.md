@@ -19,7 +19,7 @@ reissued. This is the only supported way to remove a rule.
 3. **Run the script:**
 
    ```sh
-   python3 <plugin>/skills/retire/scripts/retire_rule.py --id <id> --reason "<reason>" [--superseded-by <id>]
+   python3 ${CLAUDE_PLUGIN_ROOT}/skills/retire/scripts/retire_rule.py --id <id> --reason "<reason>" [--superseded-by <id>]
    ```
 
    It writes the tombstone first, then removes the rule file.

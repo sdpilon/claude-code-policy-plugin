@@ -8,7 +8,7 @@ description: "Bootstraps the .policy/ layer in a repository that doesn't have on
 Run from the repository root:
 
 ```sh
-python3 <plugin>/skills/init/scripts/init_policy.py
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/init/scripts/init_policy.py
 ```
 
 The script creates:

@@ -12,7 +12,7 @@ Read-only. Runs a deterministic script and presents the result. It never edits r
 1. Run the inventory:
 
    ```sh
-   python3 <plugin>/skills/status/scripts/policy_status.py .
+   python3 ${CLAUDE_PLUGIN_ROOT}/skills/status/scripts/policy_status.py .
    ```
 
 2. Present a table with one row per rule: `ID`, `title`, `tier`, and `via`. Sort by ID.

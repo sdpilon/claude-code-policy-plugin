@@ -77,10 +77,10 @@ scoping is not planned as plugin code: Claude Code's native `.claude/rules/` (pr
 
 ## Paths in skills
 
-Skills refer to scripts as `<plugin>/skills/<skill>/scripts/...`. `<plugin>` is the
-plugin's root directory: the folder that contains `skills/` and `scripts/`. When a skill
-loads, the harness reports its base directory, which is `<plugin>/skills/<skill>`, so the
-plugin root is two levels up from it.
+Skills refer to scripts as `${CLAUDE_PLUGIN_ROOT}/skills/<skill>/scripts/...`, where
+`${CLAUDE_PLUGIN_ROOT}` is the plugin's root directory: the folder that contains `skills/` and
+`scripts/`. If the variable is not set in the shell that runs a script, the plugin root is the
+folder two levels above the skill's base directory, which the harness reports when the skill loads.
 
 ## Installing into a project
 

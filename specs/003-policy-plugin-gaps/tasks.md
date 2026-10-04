@@ -128,9 +128,9 @@ modules in `scripts/`, tests in `tests/`.
 
 **Independent Test**: from a fresh session, resolve the plugin root by the documented method and run one script by its resolved path, with no search (quickstart scenario 5 points at the path).
 
-- [ ] T017 [US5] Resolve research R7 by checking whether `${CLAUDE_PLUGIN_ROOT}` is substituted in skill content (Claude Code plugin docs or `claude-code-guide`). Record the decision in `specs/003-policy-plugin-gaps/research.md` under R7.
-- [ ] T018 [US5] Apply the R7 decision. If substituted: rewrite script paths in `skills/*/SKILL.md` to `${CLAUDE_PLUGIN_ROOT}/skills/<skill>/scripts/...`. If not: create `scripts/plugin_root.py` that prints the root by walking up from its own path, with `tests/test_plugin_root.py`.
-- [ ] T019 [US5] Update the "Paths in skills" section of `README.md` so it describes the one documented method. Remove the "two levels up" rule if T018 made it unnecessary.
+- [X] T017 [US5] Resolve research R7 by checking whether `${CLAUDE_PLUGIN_ROOT}` is substituted in skill content (Claude Code plugin docs or `claude-code-guide`). Record the decision in `specs/003-policy-plugin-gaps/research.md` under R7.
+- [X] T018 [US5] Apply the R7 decision. If substituted: rewrite script paths in `skills/*/SKILL.md` to `${CLAUDE_PLUGIN_ROOT}/skills/<skill>/scripts/...`. If not: create `scripts/plugin_root.py` that prints the root by walking up from its own path, with `tests/test_plugin_root.py`.
+- [X] T019 [US5] Update the "Paths in skills" section of `README.md` so it describes the one documented method. Remove the "two levels up" rule if T018 made it unnecessary.
 
 **Checkpoint**: US5 works alone. An agent finds the root by one method.
 

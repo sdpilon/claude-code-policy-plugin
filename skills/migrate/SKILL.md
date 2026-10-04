@@ -14,7 +14,7 @@ The mechanical split is a script. Every decision it can't make safely goes to a 
 2. **Dry run:**
 
    ```sh
-   python3 <plugin>/skills/migrate/scripts/migrate_rules.py --source-dir .policy --dest-dir .policy/rule --dry-run
+   python3 ${CLAUDE_PLUGIN_ROOT}/skills/migrate/scripts/migrate_rules.py --source-dir .policy --dest-dir .policy/rule --dry-run
    ```
 
    Show the person the planned mapping (`source_id` → `new_id`) and the `needs_review` list.
