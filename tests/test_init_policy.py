@@ -67,6 +67,10 @@ class InitTests(unittest.TestCase):
             "written-only",
             "--verification-via",
             "review",
+            "--wording",
+            "human=Commits MUST be signed by their author.",
+            "--wording",
+            "agent=Sign every commit.",
             "--rationale",
             "Attribution matters.",
         )

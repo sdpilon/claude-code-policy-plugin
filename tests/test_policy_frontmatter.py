@@ -14,6 +14,8 @@ audience: [agent]
 verification:
   method: ci-blocking
   via: "secret-scan job"
+wording:
+  agent: "Never print secrets to CI output."
 ---
 
 **047**: Secrets MUST NOT appear in CI logs.
@@ -30,7 +32,7 @@ class ParseRenderTests(unittest.TestCase):
                 for line in rendered.splitlines()[1:-1]
                 if not line.startswith("  ")
             ],
-            ["title", "tags", "created", "modified", "audience", "verification"],
+            ["title", "tags", "created", "modified", "audience", "verification", "wording"],
         )
         self.assertEqual(fm.parse(rendered), fields)
 
@@ -107,6 +109,61 @@ class ValidateStatementTests(unittest.TestCase):
 
     def test_empty_statement_fails(self):
         self.assertTrue(fm.validate_statement("   "))
+
+
+class WordingTests(unittest.TestCase):
+    def fields(self):
+        return fm.parse(VALID)
+
+    def test_normalize_collapses_runs_and_trims(self):
+        self.assertEqual(
+            fm.normalize_wording("  Secrets\tMUST\n\nnot   leak. \r\n"), "Secrets MUST not leak."
+        )
+
+    def test_normalize_keeps_single_spaces_and_punctuation(self):
+        self.assertEqual(fm.normalize_wording("a: b, c."), "a: b, c.")
+
+    def test_normalize_of_only_whitespace_is_empty(self):
+        self.assertEqual(fm.normalize_wording(" \t\n "), "")
+
+    def test_valid_fields_pass(self):
+        self.assertEqual(fm.validate(self.fields()), [])
+
+    def test_missing_wording_fails(self):
+        fields = self.fields()
+        del fields["wording"]
+        self.assertTrue(any("wording is required" in e for e in fm.validate(fields)))
+
+    def test_wording_keys_must_match_audience(self):
+        fields = self.fields()
+        fields["audience"] = ["human", "agent"]
+        problems = fm.validate(fields)
+        self.assertTrue(any("no entry for audience ['human']" in e for e in problems))
+
+    def test_wording_for_audience_not_in_rule_fails(self):
+        fields = self.fields()
+        fields["wording"] = {"agent": "Use it.", "human": "Use it."}
+        self.assertTrue(any("not in audience" in e for e in fm.validate(fields)))
+
+    def test_newline_in_wording_value_fails(self):
+        fields = self.fields()
+        fields["wording"] = {"agent": "Line one\nline two"}
+        self.assertTrue(any("single line" in e for e in fm.validate(fields)))
+
+    def test_empty_wording_value_fails(self):
+        fields = self.fields()
+        fields["wording"] = {"agent": "  "}
+        self.assertTrue(any("non-empty" in e for e in fm.validate(fields)))
+
+    def test_synced_wording_key_outside_enum_fails(self):
+        fields = self.fields()
+        fields["synced_wording"] = {"robot": "Beep."}
+        self.assertTrue(any("synced_wording keys" in e for e in fm.validate(fields)))
+
+    def test_synced_wording_subset_of_audiences_passes(self):
+        fields = self.fields()
+        fields["synced_wording"] = {"agent": "Never print secrets to CI output."}
+        self.assertEqual(fm.validate(fields), [])
 
 
 if __name__ == "__main__":

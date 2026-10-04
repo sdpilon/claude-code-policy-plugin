@@ -20,7 +20,7 @@
 
 **Purpose**: Record the state before any change
 
-- [ ] T001 Run `tools/check.sh` and the unittest suite as CI runs them (see `.github/workflows/checks.yml`) from the repository root, and record any failures that already exist on `main` in the PR description. Do not fix them in this feature.
+- [X] T001 Run `tools/check.sh` and the unittest suite as CI runs them (see `.github/workflows/checks.yml`) from the repository root, and record any failures that already exist on `main` in the PR description. Do not fix them in this feature.
 
 ---
 
@@ -30,20 +30,20 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T002 Extend `KEY_ORDER` in `scripts/policy_frontmatter.py` to `title, tags, created, modified, audience, verification, wording, synced_hash, synced_wording`
-- [ ] T003 Add `normalize_wording(text)` to `scripts/policy_frontmatter.py`: collapse each run of `[ \t\r\n]+` into one space and trim both ends; a pure function that returns a `str`
-- [ ] T004 Extend `validate()` in `scripts/policy_frontmatter.py`: `wording` is required and must be a map whose keys equal the set of `audience` values; each value is non-empty and contains no `\n` or `\r`; `synced_wording`, when present, is a map whose keys are a subset of `{human, agent}`, with non-empty single-line values (FR-010)
-- [ ] T005 Update `content_hash` in `skills/sync/scripts/sync_status.py` to remove the `synced_hash:` line and the `synced_wording:` block (the key line plus its indented children) before hashing, so writing `synced_wording` does not change the hash
-- [ ] T006 Add `--wording AUDIENCE=TEXT` (repeatable) to `skills/add/scripts/add_rule.py`: each audience in `--audience` needs exactly one wording; a wording for an audience not in `--audience` exits `2`; each `TEXT` is normalized with `normalize_wording` and an empty result exits `2`; writes `wording` in frontmatter and does not write `synced_wording` or `synced_hash` (FR-010)
-- [ ] T007 Extend `skills/edit/scripts/edit_rule.py`: `EDITABLE` gains `wording.human` and `wording.agent`; each value is normalized; setting `wording.<audience>` for an audience not in the rule exits `2`; editing `wording` or `audience` never changes `synced_wording`; when `statement` is edited, the output lists each audience wording for review (constitution Principle II) (FR-009, FR-010)
-- [ ] T008 [P] Update `skills/add/SKILL.md`: require one wording per audience, show each wording for approval under the Principle III checkpoint before writing the file (FR-009)
-- [ ] T009 [P] Update `skills/edit/SKILL.md`: `wording.<audience>` is editable; for a `statement` edit, run `edit_rule.py --preview` first, show each audience wording for re-approval, and write only after approval (FR-009)
-- [ ] T010 Add a `wording` map matching each `audience` to every test fixture that writes a rule file, in `tests/test_policy_frontmatter.py`, `tests/test_sync_status.py`, `tests/test_record_sync.py`, `tests/test_edit_rule.py`, `tests/test_policy_status.py`, `tests/test_retire_rule.py`, `tests/test_audit_checks.py`, and `tests/test_write_lock.py`
-- [ ] T011 Add unit tests in `tests/test_policy_frontmatter.py` for `normalize_wording` (runs of spaces, tabs, newlines, leading and trailing whitespace) and for `validate()` rejecting a missing `wording`, a key mismatch, a newline in a value, and an invalid `synced_wording` key
-- [ ] T012 Add unit tests in `tests/test_add_rule.py` and `tests/test_edit_rule.py` for `--wording` and `wording.<audience>` behavior listed in T006 and T007. Update `tests/test_init_policy.py`, whose `add` call must pass `--wording` for each audience.
-- [ ] T013 Add a unit test in `tests/test_sync_status.py`: `content_hash` is unchanged when `synced_wording` is added or changed, and changes when `wording` changes
-- [ ] T014 Update `skills/status/scripts/policy_status.py` so that a rule whose `wording` is missing, or whose `wording` keys do not match its `audience`, gets a `defect` in the status output, as `audience missing` already does (FR-010)
-- [ ] T015 Add a test in `tests/test_policy_status.py` for a rule with no `wording` and for a rule whose `wording` keys differ from its `audience`; both must show a defect (FR-010)
+- [X] T002 Extend `KEY_ORDER` in `scripts/policy_frontmatter.py` to `title, tags, created, modified, audience, verification, wording, synced_hash, synced_wording`
+- [X] T003 Add `normalize_wording(text)` to `scripts/policy_frontmatter.py`: collapse each run of `[ \t\r\n]+` into one space and trim both ends; a pure function that returns a `str`
+- [X] T004 Extend `validate()` in `scripts/policy_frontmatter.py`: `wording` is required and must be a map whose keys equal the set of `audience` values; each value is non-empty and contains no `\n` or `\r`; `synced_wording`, when present, is a map whose keys are a subset of `{human, agent}`, with non-empty single-line values (FR-010)
+- [X] T005 Update `content_hash` in `skills/sync/scripts/sync_status.py` to remove the `synced_hash:` line and the `synced_wording:` block (the key line plus its indented children) before hashing, so writing `synced_wording` does not change the hash
+- [X] T006 Add `--wording AUDIENCE=TEXT` (repeatable) to `skills/add/scripts/add_rule.py`: each audience in `--audience` needs exactly one wording; a wording for an audience not in `--audience` exits `2`; each `TEXT` is normalized with `normalize_wording` and an empty result exits `2`; writes `wording` in frontmatter and does not write `synced_wording` or `synced_hash` (FR-010)
+- [X] T007 Extend `skills/edit/scripts/edit_rule.py`: `EDITABLE` gains `wording.human` and `wording.agent`; each value is normalized; setting `wording.<audience>` for an audience not in the rule exits `2`; editing `wording` or `audience` never changes `synced_wording`; when `statement` is edited, the output lists each audience wording for review (constitution Principle II) (FR-009, FR-010)
+- [X] T008 [P] Update `skills/add/SKILL.md`: require one wording per audience, show each wording for approval under the Principle III checkpoint before writing the file (FR-009)
+- [X] T009 [P] Update `skills/edit/SKILL.md`: `wording.<audience>` is editable; for a `statement` edit, run `edit_rule.py --preview` first, show each audience wording for re-approval, and write only after approval (FR-009)
+- [X] T010 Add a `wording` map matching each `audience` to every test fixture that writes a rule file, in `tests/test_policy_frontmatter.py`, `tests/test_sync_status.py`, `tests/test_record_sync.py`, `tests/test_edit_rule.py`, `tests/test_policy_status.py`, `tests/test_retire_rule.py`, `tests/test_audit_checks.py`, and `tests/test_write_lock.py`
+- [X] T011 Add unit tests in `tests/test_policy_frontmatter.py` for `normalize_wording` (runs of spaces, tabs, newlines, leading and trailing whitespace) and for `validate()` rejecting a missing `wording`, a key mismatch, a newline in a value, and an invalid `synced_wording` key
+- [X] T012 Add unit tests in `tests/test_add_rule.py` and `tests/test_edit_rule.py` for `--wording` and `wording.<audience>` behavior listed in T006 and T007. Update `tests/test_init_policy.py`, whose `add` call must pass `--wording` for each audience.
+- [X] T013 Add a unit test in `tests/test_sync_status.py`: `content_hash` is unchanged when `synced_wording` is added or changed, and changes when `wording` changes
+- [X] T014 Update `skills/status/scripts/policy_status.py` so that a rule whose `wording` is missing, or whose `wording` keys do not match its `audience`, gets a `defect` in the status output, as `audience missing` already does (FR-010)
+- [X] T015 Add a test in `tests/test_policy_status.py` for a rule with no `wording` and for a rule whose `wording` keys differ from its `audience`; both must show a defect (FR-010)
 
 **Checkpoint**: Foundation ready. Rules store, validate, and hash wording correctly.
 
@@ -57,21 +57,21 @@
 
 ### Tests for User Story 1
 
-- [ ] T016 [US1] Add `--root` (default `.`) to `skills/sync/scripts/sync_status.py`; derived-doc paths resolve against it
-- [ ] T017 [US1] Add `missing_wording` to each row in `skills/sync/scripts/sync_status.py`: active audiences with no `wording` entry
-- [ ] T018 [US1] Add `stale_in` to each row in `skills/sync/scripts/sync_status.py`: for each audience key in `synced_wording` that is not in `audience`, locate the derived doc (human → `CONTRIBUTING.md`; agent → `CLAUDE.md`, plus `.claude/rules/<id>.md` as `kind: "file"`); `status` is `absent` if the doc is missing
-- [ ] T019 [US1] In `stale_in` in `skills/sync/scripts/sync_status.py`, for each present doc, search for the stored text as a pattern built from its words joined by `[ \t\r\n]+`; `status` is `not_found` (0 matches), `ambiguous` (more than 1), or `found` (exactly 1, with the matched span as `text`)
-- [ ] T020 [US1] In `stale_in` in `skills/sync/scripts/sync_status.py`, for `kind: "file"`, `status` is `found` only when the file content equals the stored text plus `\n`; otherwise `not_found`
-- [ ] T021 [US1] Set `changed` to `true` in `skills/sync/scripts/sync_status.py` whenever `stale_in` or `missing_wording` is non-empty
-- [ ] T022 [US1] Add tests in `tests/test_sync_status.py` covering every audience transition: `[human]`→`[agent]`, `[agent]`→`[human]`, `[human, agent]`→`[agent]`, `[human, agent]`→`[human]`, `[agent]`→`[human, agent]`, and `[human]`→`[human, agent]`; for each transition, every dropped audience is listed in `stale_in`, and no added audience produces a removal
-- [ ] T023 [US1] Add tests in `tests/test_sync_status.py` for stale-location outcomes: reworded text gives `not_found`; duplicated text gives `ambiguous`; missing doc gives `absent`; agent-only file with exact content gives `found` with `kind: "file"`
-- [ ] T024 [US1] Add tests in `tests/test_sync_status.py` for targeting and missing wording: a still-targeted audience is never listed in `stale_in`; a missing wording is reported in `missing_wording`
+- [X] T016 [US1] Add `--root` (default `.`) to `skills/sync/scripts/sync_status.py`; derived-doc paths resolve against it
+- [X] T017 [US1] Add `missing_wording` to each row in `skills/sync/scripts/sync_status.py`: active audiences with no `wording` entry
+- [X] T018 [US1] Add `stale_in` to each row in `skills/sync/scripts/sync_status.py`: for each audience key in `synced_wording` that is not in `audience`, locate the derived doc (human → `CONTRIBUTING.md`; agent → `CLAUDE.md`, plus `.claude/rules/<id>.md` as `kind: "file"`); `status` is `absent` if the doc is missing
+- [X] T019 [US1] In `stale_in` in `skills/sync/scripts/sync_status.py`, for each present doc, search for the stored text as a pattern built from its words joined by `[ \t\r\n]+`; `status` is `not_found` (0 matches), `ambiguous` (more than 1), or `found` (exactly 1, with the matched span as `text`)
+- [X] T020 [US1] In `stale_in` in `skills/sync/scripts/sync_status.py`, for `kind: "file"`, `status` is `found` only when the file content equals the stored text plus `\n`; otherwise `not_found`
+- [X] T021 [US1] Set `changed` to `true` in `skills/sync/scripts/sync_status.py` whenever `stale_in` or `missing_wording` is non-empty
+- [X] T022 [US1] Add tests in `tests/test_sync_status.py` covering every audience transition: `[human]`→`[agent]`, `[agent]`→`[human]`, `[human, agent]`→`[agent]`, `[human, agent]`→`[human]`, `[agent]`→`[human, agent]`, and `[human]`→`[human, agent]`; for each transition, every dropped audience is listed in `stale_in`, and no added audience produces a removal
+- [X] T023 [US1] Add tests in `tests/test_sync_status.py` for stale-location outcomes: reworded text gives `not_found`; duplicated text gives `ambiguous`; missing doc gives `absent`; agent-only file with exact content gives `found` with `kind: "file"`
+- [X] T024 [US1] Add tests in `tests/test_sync_status.py` for targeting and missing wording: a still-targeted audience is never listed in `stale_in`; a missing wording is reported in `missing_wording`
 
 ### Implementation for User Story 1
 
-- [ ] T025 [US1] Update step 4 of `skills/sync/SKILL.md`: propose removals only for `stale_in` entries with `status: "found"`; report `not_found`, `ambiguous`, and `absent` entries by document and rule ID with no removal proposed (FR-002)
-- [ ] T026 [US1] Update step 4 of `skills/sync/SKILL.md` for additions: each proposed addition states the target section and the position within it (FR-008); a rule listed in `missing_wording` is reported as a defect and not proposed; each addition writes only the `wording` for that document's audience, copied verbatim (FR-011)
-- [ ] T027 [US1] Confirm the `description` in the frontmatter of `skills/sync/SKILL.md`, `skills/add/SKILL.md`, and `skills/edit/SKILL.md` is unchanged; for any that changed, run fresh-context trigger tests (constitution Plugin Constraints) and record them in `specs/005-sync-audience-removal/checklists/trigger-tests.md`
+- [X] T025 [US1] Update step 4 of `skills/sync/SKILL.md`: propose removals only for `stale_in` entries with `status: "found"`; report `not_found`, `ambiguous`, and `absent` entries by document and rule ID with no removal proposed (FR-002)
+- [X] T026 [US1] Update step 4 of `skills/sync/SKILL.md` for additions: each proposed addition states the target section and the position within it (FR-008); a rule listed in `missing_wording` is reported as a defect and not proposed; each addition writes only the `wording` for that document's audience, copied verbatim (FR-011)
+- [X] T027 [US1] Confirm the `description` in the frontmatter of `skills/sync/SKILL.md`, `skills/add/SKILL.md`, and `skills/edit/SKILL.md` is unchanged; for any that changed, run fresh-context trigger tests (constitution Plugin Constraints) and record them in `specs/005-sync-audience-removal/checklists/trigger-tests.md`
 
 **Checkpoint**: User Story 1 is independently testable. Quickstart Scenarios 1, 4, 5, and 6 pass.
 
@@ -85,13 +85,13 @@
 
 ### Tests for User Story 2
 
-- [ ] T028 [US2] Add tests in `tests/test_record_sync.py`: `synced_wording` is written for current audiences; a dropped audience key is pruned; a recorded rule reads `changed: false`; the body is byte-identical after recording; a declined removal (no record) keeps `changed: true` and the stale location `found`
+- [X] T028 [US2] Add tests in `tests/test_record_sync.py`: `synced_wording` is written for current audiences; a dropped audience key is pruned; a recorded rule reads `changed: false`; the body is byte-identical after recording; a declined removal (no record) keeps `changed: true` and the stale location `found`
 
 ### Implementation for User Story 2
 
-- [ ] T029 [US2] Update `skills/sync/scripts/record_sync.py` so that for each approved ID it sets `synced_wording` to the current `wording` for the rule's current audiences, verbatim, and removes `synced_wording` entirely when no audience remains (FR-004)
-- [ ] T030 [US2] Update `skills/sync/scripts/record_sync.py` to compute `synced_hash` with the updated `content_hash` (T005) before writing `synced_hash` and `synced_wording`, and to write only those two fields (FR-004)
-- [ ] T031 [US2] Update steps 5 and 6 of `skills/sync/SKILL.md`: before applying each approved removal or addition, re-read the target document and stop for that item if it changed since the proposal (FR-005); record only the approved IDs and say which were declined
+- [X] T029 [US2] Update `skills/sync/scripts/record_sync.py` so that for each approved ID it sets `synced_wording` to the current `wording` for the rule's current audiences, verbatim, and removes `synced_wording` entirely when no audience remains (FR-004)
+- [X] T030 [US2] Update `skills/sync/scripts/record_sync.py` to compute `synced_hash` with the updated `content_hash` (T005) before writing `synced_hash` and `synced_wording`, and to write only those two fields (FR-004)
+- [X] T031 [US2] Update steps 5 and 6 of `skills/sync/SKILL.md`: before applying each approved removal or addition, re-read the target document and stop for that item if it changed since the proposal (FR-005); record only the approved IDs and say which were declined
 
 **Checkpoint**: User Story 2 is independently testable. Quickstart Scenarios 2 and 3 pass.
 
@@ -101,9 +101,9 @@
 
 **Purpose**: Documentation, full checks, and end-to-end validation
 
-- [ ] T032 Update `README.md` to describe the current behavior: `/policy:add` and `/policy:edit` take a wording per audience; `/policy:sync` proposes removals of last-written wording and states placement for additions; existing prose in a repo is copied into rule files by hand once
-- [ ] T033 Run `tools/check.sh` and the unittest suite; all checks pass, and any failure from T001 is either unchanged or noted
-- [ ] T034 Run quickstart Scenarios 1–6 in a scratch directory and confirm each pass condition; record the results in the PR description; also confirm that declining a proposal leaves every derived doc unchanged (SC-002)
+- [X] T032 Update `README.md` to describe the current behavior: `/policy:add` and `/policy:edit` take a wording per audience; `/policy:sync` proposes removals of last-written wording and states placement for additions; existing prose in a repo is copied into rule files by hand once
+- [X] T033 Run `tools/check.sh` and the unittest suite; all checks pass, and any failure from T001 is either unchanged or noted
+- [X] T034 Run quickstart Scenarios 1–6 in a scratch directory and confirm each pass condition; record the results in the PR description; also confirm that declining a proposal leaves every derived doc unchanged (SC-002)
 
 ---
 
@@ -155,3 +155,49 @@
 - [Story] label maps each task to a user story for traceability
 - Constraints from data-model.md are carried into the tasks that enforce them (T002–T004, T006, T007, T018–T020)
 - Commit after each phase, not each task, and only when the user asks
+
+## Phase 5: Convergence
+
+**Purpose**: Remaining gaps found by `/speckit-converge` against spec.md, plan.md, tasks.md, and the constitution
+
+- [X] T035 CRITICAL: `sync` MUST re-check that the rule's source hasn't changed since its proposal before applying it: record each rule's `current_hash` in the proposal, and before applying any removal, addition, or `record_sync`, re-run `sync_status` and stop for any rule whose `current_hash` changed (the skill currently re-checks only derived docs) per Constitution III (missing)
+- [X] T036 Make `sync_status` report `stale_in` and `missing_wording` as empty for a rule whose validation fails (for example an invalid `audience`), so no removal is offered for it, and add a test in `tests/test_sync_status.py` per spec Edge Cases and `contracts/sync_status.md` error behavior (contradicts)
+
+## Phase 6: Convergence
+
+**Purpose**: Remaining gaps found by `/speckit-converge` against spec.md, plan.md, tasks.md, and the constitution
+
+- [X] T037 Add a test in `tests/test_sync_status.py` that an audience change (for example `[human]` to `[agent]`) after a record reads `changed: true`, and that a rule with no audience change reads `changed: false` after a record, per FR-003 and plan decision R8 (missing)
+
+## Phase 7: Convergence
+
+**Purpose**: Remaining gaps found by `/speckit-converge` against spec.md, plan.md, tasks.md, and the constitution
+
+- [X] T038 Document the `--expect ID=HASH` option of `record_sync.py` in the `record_sync.py` section of `contracts/rule_wording.md`, including its exit code 1 on a changed source, per Constitution III and T035 (partial)
+
+## Phase 8: Spec amendment (FR-012)
+
+**Purpose**: Reject an audience drop that would silently discard an unrecorded wording edit
+
+- [X] T039 In `skills/edit/scripts/edit_rule.py`, reject an audience change that drops an audience whose `wording.<audience>` differs from its `synced_wording.<audience>`, exiting 2 with a message that names the audience and says to run sync first or revert the wording; a drop with no such difference, or for an audience never recorded, still succeeds; add tests in `tests/test_edit_rule.py` per FR-012 (missing)
+- [X] T040 Update the guardrails in `skills/edit/SKILL.md` to describe the rejected drop and the sync-first path, per FR-012 (missing)
+- [X] T041 Document the rejected drop in the `edit_rule.py` section of `contracts/rule_wording.md`, per FR-012 (missing)
+
+## Phase 9: Plan revision (widened spec)
+
+**Purpose**: Work added by the revised plan for the rewording, review-flag, and source re-check decisions (R9 to R13)
+
+- [X] T042 In `skills/sync/scripts/sync_status.py`, add `stale_in` entries for audiences still targeted whose `wording` differs from `synced_wording`, with `reason: "reworded"`, matched by the same exact-once search; give the existing dropped-audience entries `reason: "dropped"`; mark the row `changed` for either reason, per FR-001, FR-002, R9, and the data-model stale location
+- [X] T043 Add tests in `tests/test_sync_status.py` for a reworded still-targeted audience (`found`, `not_found`, `ambiguous`), the `reason` value on dropped entries, and a reworded agent-only file (`kind: "file"`), per quickstart Scenarios 7 and 9 and R9 and R12
+- [X] T044 Update step 4 of `skills/sync/SKILL.md` so each reworded removal is proposed together with an addition of the current wording to the same doc, and a reworded agent-only file is overwritten only when its content equals the last-written wording plus a newline, per FR-002 and R12
+- [X] T045 In `skills/edit/scripts/edit_rule.py`, require `--reviewed-wording` on any non-preview run whose `--set` list includes `statement`; without it, exit 2 and write nothing; `--preview` needs no flag, per FR-009 and R11
+- [X] T046 Add tests in `tests/test_edit_rule.py` for the review flag: a statement change without the flag is refused with nothing written, one with the flag is written, and preview works without it, per quickstart Scenario 10 and R11
+- [X] T047 Update `skills/edit/SKILL.md` so the skill passes `--reviewed-wording` only after the person approves each `review wording.<audience>` line, per FR-009
+- [X] T048 Update the sync bullet in `README.md` to say that a reworded still-targeted audience gets its old text removed and the new wording added, keeping README to the current state, per the constitution's README rule
+- [X] T049 Run quickstart Scenarios 1 to 10 in a scratch directory, and record which pass in the PR description, per quickstart and SC-001 to SC-003
+
+## Phase 10: Convergence
+
+**Purpose**: Remaining gaps found by `/speckit-converge` against spec.md, plan.md, tasks.md, and the constitution
+
+- [X] T050 Update the `/policy:edit` bullet in `README.md` to say that a statement change needs `--reviewed-wording` after the person approves each audience wording, and that an audience drop is rejected while its wording has an edit sync has not recorded, per FR-009, FR-012, and the constitution's README current-state rule (partial)

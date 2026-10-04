@@ -12,6 +12,8 @@ audience: [human]
 verification:
   method: ci-checked
   via: ""
+wording:
+  human: "PRs need one approval."
 ---
 
 **002**: PRs MUST have one approval.
@@ -109,6 +111,8 @@ class RetireRuleTests(unittest.TestCase):
                 "human",
                 "--verification-method",
                 "written-only",
+                "--wording",
+                "human=Tags MUST exist.",
                 "--policy-dir",
                 str(policy),
             )

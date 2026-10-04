@@ -35,10 +35,14 @@ synced_wording:
 
 - `--set wording.human=TEXT` and `--set wording.agent=TEXT` are editable.
 - Setting `wording.<audience>` for an audience not in `audience` is an error (exit `2`).
+- Setting `audience` to remove an audience drops that audience's `wording` key. This is rejected (exit `2`, nothing written) when the audience has a `synced_wording` entry that differs from its current `wording`, because an unrecorded wording edit would otherwise be discarded. The message names the audience and says to run sync first or revert the wording. An audience with no `synced_wording` entry, or with equal values, is dropped without error.
+- A run whose `--set` list includes `statement` requires `--reviewed-wording`. Without it the run exits `2` and writes nothing. `--preview` does not need the flag, and it prints `review wording.<audience>` for each audience.
 - Editing `wording` or `audience` changes the content hash, so the rule reads `changed` until `record_sync` runs. `synced_wording` is never changed by `edit`.
 
 ## `record_sync.py`
 
+- `ID ...`: rules to record. Each must exist (exit `2` otherwise).
+- `--expect ID=HASH`, repeatable: the content hash the rule had when it was proposed. Each named ID must also be recorded. If a rule's current content hash differs, the run exits `1`, names the rule, and writes nothing. This is the source re-check Constitution Principle III requires.
 - For each approved ID, sets `synced_wording` to the current `wording` for the rule's current audiences, verbatim.
 - Removes `synced_wording` entirely when no audience remains.
 - Writes only `synced_hash` and `synced_wording`. The body and other fields stay byte-identical.

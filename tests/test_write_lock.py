@@ -19,6 +19,8 @@ audience: [agent]
 verification:
   method: ci-blocking
   via: "secret-scan job"
+wording:
+  agent: "Never print secrets to CI output."
 ---
 
 **{id}**: Secrets MUST NOT appear in CI logs.

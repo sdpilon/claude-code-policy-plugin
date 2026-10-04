@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
-"""Backs /policy:sync's apply-and-record step: write each named rule's synced_hash (FR-001..FR-003).
+"""Backs /policy:sync's apply-and-record step: write each named rule's synced_hash and
+synced_wording (FR-001..FR-004).
 
-Writes only the synced_hash line in the frontmatter. The body and every other field stay
-byte-identical. Validates every ID before writing anything, so a bad ID writes nothing.
+Writes only the synced_hash line and the synced_wording block in the frontmatter. The body and
+every other field stay byte-identical. synced_wording holds the wording for the rule's current
+audiences, so audiences dropped since the last record are pruned. Validates every ID before
+writing anything, so a bad ID writes nothing.
 """
 
 import argparse
@@ -20,9 +23,10 @@ sys.path.insert(
         / "scripts"
     ),
 )
+import policy_frontmatter as fm
 import policy_ids as ids
 import policy_lock
-from sync_status import content_hash
+from sync_status import AUDIENCE_ORDER, content_hash
 
 LOCK_TIMEOUT = 10.0
 ChangedDuringRecord = policy_lock.ChangedDuringWrite
@@ -33,8 +37,20 @@ def fail(message, code=2):
     sys.exit(code)
 
 
-def with_synced_hash(text, digest):
-    """Return text with its frontmatter synced_hash line set to digest, adding it if absent."""
+def synced_wording_for(fields):
+    """The wording for the rule's current audiences, as written to derived docs. None when empty."""
+    audience = fields.get("audience") if isinstance(fields.get("audience"), list) else []
+    wording = fields.get("wording") if isinstance(fields.get("wording"), dict) else {}
+    current = {a: wording[a] for a in AUDIENCE_ORDER if a in audience and a in wording}
+    return current or None
+
+
+def with_synced_hash(text, digest, synced_wording=None):
+    """Return text with synced_hash set to digest and the synced_wording block set to synced_wording.
+
+    An existing line or block is replaced in place, and a missing one is added before the closing
+    '---'. A synced_wording of None removes the block.
+    """
     lines = text.splitlines(keepends=True)
     if not lines or lines[0].strip() != "---":
         raise ValueError("no frontmatter block")
@@ -42,13 +58,35 @@ def with_synced_hash(text, digest):
         end = next(i for i in range(1, len(lines)) if lines[i].strip() == "---")
     except StopIteration:
         raise ValueError("unterminated frontmatter block") from None
-    line = f"synced_hash: {digest}\n"
-    for i in range(1, end):
-        if lines[i].startswith("synced_hash:"):
-            lines[i] = line
-            return "".join(lines)
-    lines.insert(end, line)
-    return "".join(lines)
+    block = []
+    if synced_wording:
+        ordered = {a: synced_wording[a] for a in AUDIENCE_ORDER if a in synced_wording}
+        block = fm.render({"synced_wording": ordered}).splitlines(keepends=True)[1:-1]
+    hash_line = f"synced_hash: {digest}\n"
+
+    out = []
+    placed_hash = placed_wording = False
+    i = 1
+    while i < end:
+        line = lines[i]
+        if line.startswith("synced_hash:"):
+            out.append(hash_line)
+            placed_hash = True
+            i += 1
+        elif line.startswith("synced_wording:"):
+            i += 1
+            while i < end and lines[i].startswith("  "):
+                i += 1
+            out += block
+            placed_wording = True
+        else:
+            out.append(line)
+            i += 1
+    if not placed_hash:
+        out.append(hash_line)
+    if not placed_wording:
+        out += block
+    return "".join([lines[0], *out, *lines[end:]])
 
 
 def resolve(raw, rule_dir):
@@ -60,12 +98,33 @@ def resolve(raw, rule_dir):
     return path
 
 
+def parse_expect(raw_items, ids_given):
+    """Map rule ID to the hash it had when proposed. Each --expect must name a rule being recorded."""
+    expected = {}
+    for item in raw_items:
+        raw_id, sep, digest = item.partition("=")
+        if not sep or not raw_id.isdigit() or not digest:
+            fail(f"--expect expects ID=HASH, got {item!r}")
+        if raw_id not in ids_given:
+            fail(f"--expect names rule {raw_id}, which is not being recorded")
+        expected[int(raw_id)] = digest
+    return expected
+
+
 def main(argv):
     p = argparse.ArgumentParser(prog="record_sync.py")
     p.add_argument("--dir", default=".policy/rule")
+    p.add_argument(
+        "--expect",
+        action="append",
+        default=[],
+        metavar="ID=HASH",
+        help="content hash the rule had when it was proposed; recording is refused if it changed",
+    )
     p.add_argument("ids", nargs="+", metavar="ID")
     args = p.parse_args(argv)
     rule_dir = Path(args.dir)
+    expected = parse_expect(args.expect, args.ids)
 
     # Phase 1: resolve and compute every change before any write.
     plan = []
@@ -73,9 +132,16 @@ def main(argv):
         path = resolve(raw, rule_dir)
         current = path.read_text(encoding="utf-8")
         try:
-            updated = with_synced_hash(current, content_hash(current))
-        except ValueError as e:
+            fields = fm.parse(current)
+            digest = content_hash(current)
+            updated = with_synced_hash(current, digest, synced_wording_for(fields))
+        except (ValueError, fm.FrontmatterError) as e:
             fail(f"rule {raw}: {e}")
+        if int(raw) in expected and expected[int(raw)] != digest:
+            fail(
+                f"rule {raw} changed since it was proposed; nothing was written. Re-run sync.",
+                code=1,
+            )
         plan.append((raw, path, current, updated))
 
     # Phase 2: write only the rules that changed, under the rule-directory lock, and only if

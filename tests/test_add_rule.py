@@ -19,6 +19,8 @@ class AddRuleTests(unittest.TestCase):
             "ci-blocking",
             "--verification-via",
             "secret-scan job",
+            "--wording",
+            "agent=Never print secrets to CI output.",
             "--policy-dir",
             str(Path(cwd) / ".policy"),
         ]
@@ -77,6 +79,8 @@ class AddRuleTests(unittest.TestCase):
                 "human",
                 "--verification-method",
                 "written-only",
+                "--wording",
+                "human=Releases MUST be tagged.",
                 "--dir",
                 "ci",
                 "--policy-dir",
@@ -84,6 +88,72 @@ class AddRuleTests(unittest.TestCase):
             )
             self.assertEqual(code, 0)
             self.assertTrue((Path(d) / ".policy" / "rule" / "ci" / "001.md").exists())
+
+
+class AddRuleWordingTests(unittest.TestCase):
+    def common(self, cwd, *wording, audience="human,agent"):
+        args = [
+            "--statement",
+            "Secrets MUST NOT appear in CI logs.",
+            "--title",
+            "No secrets in CI logs",
+            "--audience",
+            audience,
+            "--verification-method",
+            "ci-blocking",
+            "--verification-via",
+            "secret-scan job",
+            "--policy-dir",
+            str(Path(cwd) / ".policy"),
+        ]
+        for item in wording:
+            args += ["--wording", item]
+        return run(ADD, *args)
+
+    def test_each_audience_wording_is_written_to_frontmatter(self):
+        with scratch() as d:
+            code, _, err = self.common(
+                d, "human=Secrets MUST NOT appear in CI logs.", "agent=Never print secrets."
+            )
+            self.assertEqual(code, 0, err)
+            text = (Path(d) / ".policy" / "rule" / "001.md").read_text()
+            self.assertIn("wording:\n  human: Secrets MUST NOT appear in CI logs.\n", text)
+            self.assertIn("  agent: Never print secrets.\n", text)
+            self.assertNotIn("synced_wording", text)
+            self.assertNotIn("synced_hash", text)
+
+    def test_wording_is_normalized_to_one_line(self):
+        with scratch() as d:
+            code, _, _ = self.common(d, "human=Secrets   MUST\tNOT\nappear.", "agent=Never print.")
+            self.assertEqual(code, 0)
+            text = (Path(d) / ".policy" / "rule" / "001.md").read_text()
+            self.assertIn("  human: Secrets MUST NOT appear.\n", text)
+
+    def test_missing_audience_wording_exits_2_and_writes_nothing(self):
+        with scratch() as d:
+            code, _, err = self.common(d, "human=Secrets MUST NOT appear.")
+            self.assertEqual(code, 2)
+            self.assertIn("agent", err)
+            self.assertFalse((Path(d) / ".policy" / "rule").exists())
+
+    def test_wording_for_audience_not_in_audience_exits_2(self):
+        with scratch() as d:
+            code, _, err = self.common(
+                d, "human=Secrets MUST NOT appear.", "agent=Never print.", audience="human"
+            )
+            self.assertEqual(code, 2)
+            self.assertIn("agent", err)
+
+    def test_empty_wording_exits_2(self):
+        with scratch() as d:
+            code, _, err = self.common(d, "human=   ", "agent=Never print.")
+            self.assertEqual(code, 2)
+            self.assertIn("empty", err)
+
+    def test_wording_without_equals_exits_2(self):
+        with scratch() as d:
+            code, _, _ = self.common(d, "human Secrets MUST NOT appear.", "agent=Never print.")
+            self.assertEqual(code, 2)
 
 
 if __name__ == "__main__":

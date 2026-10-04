@@ -12,7 +12,17 @@ import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
-KEY_ORDER = ["title", "tags", "created", "modified", "audience", "verification", "synced_hash"]
+KEY_ORDER = [
+    "title",
+    "tags",
+    "created",
+    "modified",
+    "audience",
+    "verification",
+    "wording",
+    "synced_hash",
+    "synced_wording",
+]
 AUDIENCES = {"human", "agent"}
 METHODS = {"ci-blocking", "ci-checked", "human-verified", "written-only"}
 ISO_RE = re.compile(r"^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}Z?)?$")
@@ -159,10 +169,52 @@ def validate(fields):
         method = verification.get("method")
         if method not in METHODS:
             errors.append(f"verification.method must be one of {sorted(METHODS)}")
+    audience_keys = audience if isinstance(audience, list) and audience else None
+    if "wording" not in fields:
+        errors.append("wording is required: one single-line entry per audience")
+    else:
+        errors += _wording_problems("wording", fields["wording"], audience_keys)
+    if "synced_wording" in fields:
+        errors += _wording_problems("synced_wording", fields["synced_wording"], None)
     synced = fields.get("synced_hash")
     if synced is not None and not (isinstance(synced, str) and SHA256_RE.match(synced)):
         errors.append("synced_hash must be a sha256 hex string when present")
     return errors
+
+
+WORDING_SPACE_RE = re.compile(r"[ \t\r\n]+")
+
+
+def normalize_wording(text):
+    """Collapse each run of spaces, tabs and newlines to one space and trim both ends.
+
+    Wording is stored on one line so the frontmatter round-trips, and matched in derived docs
+    with the same normalization (specs/005-sync-audience-removal/research.md R2).
+    """
+    return WORDING_SPACE_RE.sub(" ", text).strip(" \t\r\n")
+
+
+def _wording_problems(field, value, keys):
+    """Problems with a per-audience wording map: keys in `keys`, single-line non-empty values."""
+    problems = []
+    if not isinstance(value, dict):
+        return [f"{field} must be a map keyed by audience"]
+    extra = sorted(set(value) - AUDIENCES)
+    if extra:
+        problems.append(f"{field} keys must be human or agent, got {extra}")
+    for key, text in value.items():
+        if not isinstance(text, str) or text.strip() == "":
+            problems.append(f"{field}.{key} must be a non-empty string")
+        elif "\n" in text or "\r" in text:
+            problems.append(f"{field}.{key} must be a single line")
+    if keys is not None:
+        missing = sorted(set(keys) - set(value))
+        if missing:
+            problems.append(f"{field} has no entry for audience {missing}")
+        unknown = sorted(set(value) - set(keys))
+        if unknown:
+            problems.append(f"{field} has entries for audience {unknown} not in audience")
+    return problems
 
 
 MODAL_RE = re.compile(r"\b(MUST NOT|SHOULD NOT|MUST|SHOULD|MAY)\b")

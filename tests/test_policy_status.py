@@ -1,3 +1,4 @@
+import json
 import unittest
 from pathlib import Path
 
@@ -13,6 +14,8 @@ audience: [agent]
 verification:
   method: ci-blocking
   via: "secret-scan job"
+wording:
+  agent: "Never print secrets to CI output."
 ---
 
 **{id}**: Rule {id} MUST hold.
@@ -85,6 +88,38 @@ class PolicyStatusTests(unittest.TestCase):
                 "---\ntitle: b\nretired: 2026-10-02\nreason: gone\n---\n"
             )
             self.assertEqual(load(run(STATUS, d)[1])["gaps"], [])
+
+
+class WordingDefectTests(unittest.TestCase):
+    def write(self, d, wording_block):
+        rule_dir = Path(d) / ".policy" / "rule"
+        rule_dir.mkdir(parents=True)
+        (rule_dir / "001.md").write_text(
+            "---\ntitle: x\ncreated: 2026-10-02\nmodified: 2026-10-02\naudience: [human, agent]\n"
+            'verification:\n  method: written-only\n  via: ""\n'
+            + wording_block
+            + "---\n\n**001**: x MUST y.\n",
+            encoding="utf-8",
+        )
+
+    def defect(self, d):
+        out = run(STATUS, d)[1]
+        return json.loads(out)["rules"][0].get("defect")
+
+    def test_rule_without_wording_is_a_defect(self):
+        with scratch() as d:
+            self.write(d, "")
+            self.assertEqual(self.defect(d), "wording missing")
+
+    def test_wording_keys_that_differ_from_audience_are_a_defect(self):
+        with scratch() as d:
+            self.write(d, "wording:\n  human: x\n")
+            self.assertEqual(self.defect(d), "wording does not match audience")
+
+    def test_matching_wording_has_no_defect(self):
+        with scratch() as d:
+            self.write(d, "wording:\n  human: x\n  agent: y\n")
+            self.assertIsNone(self.defect(d))
 
 
 if __name__ == "__main__":
