@@ -151,9 +151,9 @@ modules in `scripts/`, tests in `tests/`.
 
 ## Final Phase: Polish & cross-cutting
 
-- [ ] T022 Update the skill list in `README.md` to include `edit` and the audit's usage.
-- [ ] T023 Run `tools/check.sh`. Lint, format, markdown, shell, and all unit tests must pass.
-- [ ] T024 Run quickstart scenarios 1 to 5 on a scratch repo and record each result in `specs/003-policy-plugin-gaps/quickstart.md`, or report any scenario that fails.
+- [X] T022 Update the skill list in `README.md` to include `edit` and the audit's usage.
+- [X] T023 Run `tools/check.sh`. Lint, format, markdown, shell, and all unit tests must pass.
+- [X] T024 Run quickstart scenarios 1 to 5 on a scratch repo and record each result in `specs/003-policy-plugin-gaps/quickstart.md`, or report any scenario that fails.
 
 ---
 

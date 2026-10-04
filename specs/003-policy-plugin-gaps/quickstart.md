@@ -119,3 +119,19 @@ python3 -c "import sys; sys.path.insert(0, '$PLUGIN/scripts'); import policy_fro
 ```bash
 cd / && rm -rf "$SCRATCH"
 ```
+
+## Recorded run
+
+Run on a scratch repo against this branch, with the scripts as committed. Each scenario matched
+its expected outcome.
+
+| Scenario | Result |
+|---|---|
+| 1. Record a sync | `recorded 001`, `recorded 002`; second run `unchanged` for both; unknown ID `no rule 999`, exit 2 |
+| 2. Single edit | `changed 001`; invalid statement with two modal verbs `rejected 001`, exit 2, file unchanged |
+| 3. Bulk edit | valid change `changed 001`, `changed 002`; invalid method rejects both, exit 2 |
+| 4. Audit | `pass 001`; unbuilt `deploy-gate` filed as `Build policy check` (dry-run tracker) |
+| 5. Parser docs | `parse()` returns `dict`; no frontmatter raises `FrontmatterError` |
+
+Not covered by the recorded run: a live GitHub tracker (scenario 4 used `--tracker none`). The
+dedupe against an open issue is covered by the unit tests with a fake tracker, not by a live run.

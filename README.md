@@ -23,15 +23,20 @@ generalized to drop riposte-specific content.
   non-zero on drift, so CI can surface it.
 - **`/policy:add`**: adds a rule as a new file under `.policy/rule/`, with the next
   free ID. Writes only that layer and flags that derived docs are now out of sync.
+- **`/policy:edit`**: changes the title, tags, audience, verification, statement, or
+  rationale of one or more existing rules. Previews first, then applies all-or-none, and
+  sets `modified`. Backed by `skills/edit/scripts/edit_rule.py`.
 - **`/policy:sync`**: checks whether `CONTRIBUTING.md` and the agent-operational doc
   still match `.policy/rule/`, using each rule's `audience` to pick its targets.
-  Propagates only approved changes, and skips rules whose content hasn't changed since
+  Propagates only approved changes, records each applied rule's `synced_hash` through
+  `skills/sync/scripts/record_sync.py`, and skips rules whose content hasn't changed since
   the last sync.
 - **`/policy:judge`**: decides whether a proposed rule is repo policy or personal
   preference that belongs in memory or a local doc instead.
-- **`/policy:audit`**: documents the contract for a CI-run script that checks
-  self-verifiable rules against live repo state. The script itself stays in the
-  consuming project, since it encodes that project's specific checks.
+- **`/policy:audit`**: runs the `ci-checked` rules' checks in CI and files a GitHub issue
+  for each failing or unbuilt check, deduplicated by a `policy-audit:<check>` label. The
+  plugin supplies the runner (`skills/audit/scripts/audit_checks.py`). Each project supplies
+  its own checks, in a registry file, since they encode that project's specifics.
 - **`/policy:status`**: reports every rule's title and enforcement tier. The tier comes
   from the rule's `verification` frontmatter. Backed by
   `skills/status/scripts/policy_status.py` (called directly, or through its
