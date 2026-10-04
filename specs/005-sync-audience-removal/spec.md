@@ -72,6 +72,7 @@ After the maintainer approves a removal, the text is removed from the target doc
 - **FR-005**: Sync MUST re-check each target document before applying a removal, consistent with the existing re-check rule for additions and edits.
 - **FR-006**: The sync skill's instructions MUST describe the removal step, so the proposal does not depend on the agent deciding on its own to remove text.
 - **FR-007**: When a target document is absent, sync MUST report it and MUST NOT create it for a removal.
+- **FR-008**: For each addition of a rule's wording to a derived document, the `/policy:sync` proposal MUST state the target section and the position within it, and MUST NOT write the addition before approval. Placement is decided at proposal time and approved with the rest of the change. It is not stored in the rule file.
 
 ### Key Entities *(include if feature involves data)*
 
