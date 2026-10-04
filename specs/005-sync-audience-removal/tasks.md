@@ -250,3 +250,12 @@
 - [X] T072 In `specs/005-sync-audience-removal/quickstart.md` Scenario 9, replace "`.claude/rules/001.md` does not exist yet" with an instruction to overwrite it, since Setup already creates it, per quickstart accuracy (quickstart defect 1)
 - [X] T073 In `specs/005-sync-audience-removal/quickstart.md` Scenario 6, replace "delete the `agent` line under `wording:`" with a concrete command that removes only the first `agent:` line (the `wording:` entry, not the `synced_wording:` entry), e.g. the awk form the hand run verified, per quickstart accuracy (quickstart defect 2)
 - [X] T074 In `specs/005-sync-audience-removal/quickstart.md`, add a note that `$D` and `$PLUGIN` are set in Setup and reused by every scenario, so each scenario block depends on Setup (quickstart defect 3)
+
+## Phase 16: Quickstart fixes (second hand run)
+
+**Purpose**: Quickstart defects found by a fresh hand run of Scenarios 1 to 12 on commit c713afe; the product behaved as specified
+
+- [X] T075 In `specs/005-sync-audience-removal/quickstart.md` Scenario 10, add a check that the new statement is written, for example `grep -n 'build logs' .policy/rule/001.md` against the body line `**001**:`, since the statement is stored in the body, not in a `statement` key (quickstart defect 1)
+- [X] T076 In `specs/005-sync-audience-removal/quickstart.md` Scenario 2, give the command that removes the exact sentence, for example `printf '' > CONTRIBUTING.md` (quickstart defect 2)
+- [X] T077 In `specs/005-sync-audience-removal/quickstart.md` Scenario 9, state the pass condition for a hand-edited file as "`pending` is empty and `status` is `not_found`", instead of "no deletion is proposed" (quickstart defect 3)
+- [X] T078 In `specs/005-sync-audience-removal/quickstart.md` Setup, say that `$D` and `$PLUGIN` must be set in the same shell as each scenario, or that each scenario should run as one script with absolute paths, since a sandboxed shell does not keep `cd` or variables between commands (quickstart defect 4)

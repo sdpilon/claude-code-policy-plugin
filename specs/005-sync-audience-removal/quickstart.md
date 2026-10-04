@@ -24,7 +24,7 @@ python3 $PLUGIN/skills/sync/scripts/record_sync.py --dir .policy/rule 001
 
 **Pass condition**: `.policy/rule/001.md` has `synced_wording` with both audiences, and `sync_status` reports `changed: false`.
 
-Every scenario below reuses `$D` and `$PLUGIN` from Setup. Run Setup first, in the same shell, before any scenario.
+Every scenario below reuses `$D` and `$PLUGIN` from Setup. Run Setup first, in the same shell, before any scenario. A sandboxed shell may not keep `cd` or variables between commands; if so, put each scenario's commands in one script, or use absolute paths.
 
 ## Scenario 1: audience drops `human`
 
@@ -38,9 +38,10 @@ python3 $PLUGIN/skills/sync/scripts/sync_status.py --dir .policy/rule --root .
 
 ## Scenario 2: approve, remove, record
 
-Remove the exact sentence from `CONTRIBUTING.md`, then record and run again:
+Empty `CONTRIBUTING.md` to remove the exact sentence, then record and run again:
 
 ```sh
+printf '' > CONTRIBUTING.md
 python3 $PLUGIN/skills/sync/scripts/record_sync.py --dir .policy/rule 001
 python3 $PLUGIN/skills/sync/scripts/sync_status.py --dir .policy/rule --root .
 ```
@@ -108,7 +109,7 @@ printf 'Never print secrets to CI output.\n' > .claude/rules/001.md
 python3 $PLUGIN/skills/sync/scripts/sync_status.py --dir .policy/rule --root .
 ```
 
-**Pass condition**: `stale_in` has `.claude/rules/001.md` with `kind: "file"`, `reason: "dropped"`, and `status: "found"`. If the file is then edited by hand, its status is `not_found` and no deletion is proposed.
+**Pass condition**: `stale_in` has `.claude/rules/001.md` with `kind: "file"`, `reason: "dropped"`, and `status: "found"`. If the file is then edited by hand, its status is `not_found` and `pending` is empty.
 
 ## Scenario 10: statement change needs the review flag
 
@@ -117,7 +118,7 @@ python3 $PLUGIN/skills/edit/scripts/edit_rule.py --dir .policy/rule \
   --set statement="Secrets MUST NOT appear in build logs." 001
 ```
 
-**Pass condition**: exit `2`, the message asks for `--reviewed-wording`, and the file is unchanged. With `--reviewed-wording` added, the statement is written. `--preview` without the flag prints a `review wording.<audience>` line for each audience.
+**Pass condition**: exit `2`, the message asks for `--reviewed-wording`, and the file is unchanged. With `--reviewed-wording` added, the statement is written: `grep -n 'build logs' .policy/rule/001.md` matches the body line `**001**:`, because the statement lives in the body, not in a `statement` key. `--preview` without the flag prints a `review wording.<audience>` line for each audience.
 
 ## Scenario 11: partial approval keeps the rule changed
 
