@@ -284,3 +284,11 @@
 **Purpose**: Remaining gap found by `/speckit-converge` after Phase 18 (the `changed` definition now includes `pending`)
 
 - [X] T088 Update the `changed` guarantee in `specs/005-sync-audience-removal/contracts/sync_status.md` (line 54) to list `pending` with `stale_in` and `missing_wording`, so the contract matches `build_row`, per plan Phase 1 contract `sync_status.md` and FR-003, FR-008 (partial)
+
+## Phase 20: Quickstart wording (fourth hand run)
+
+**Purpose**: Quickstart wording defects found by a fresh hand run of Scenarios 1 to 12 on commit d05822c; the product behaved as specified
+
+- [X] T089 In `specs/005-sync-audience-removal/quickstart.md` Scenario 11, reword the pass condition "pending is empty because the new wording is already in place once" to say that the added wording is already in `CONTRIBUTING.md`, so no addition is left to apply (quickstart defect 1)
+- [X] T090 In `specs/005-sync-audience-removal/quickstart.md` Scenario 7, either state the shape of a `pending` entry (`path`, `audience`, `kind`, with no text) or drop the sentence that says the removal pairs with an addition, since `sync_status` shows no text for the addition (quickstart defect 2)
+- [X] T091 In `specs/005-sync-audience-removal/quickstart.md` Scenario 11, add a check that `CONTRIBUTING.md` is byte-identical after the refused `record_sync`, for example `cmp` against a saved copy, since the scenario says nothing is written but the hand run checked only the exit code and message (quickstart defect 3)

@@ -87,7 +87,7 @@ python3 $PLUGIN/skills/edit/scripts/edit_rule.py --dir .policy/rule \
 python3 $PLUGIN/skills/sync/scripts/sync_status.py --dir .policy/rule --root .
 ```
 
-**Pass condition**: `changed: true`, `targets` still includes `CONTRIBUTING.md`, and `stale_in` has `CONTRIBUTING.md` with `audience: "human"`, `reason: "reworded"`, and `status: "found"`. The proposal pairs that removal with an addition of the new human wording to `CONTRIBUTING.md`.
+**Pass condition**: `changed: true`, `targets` still includes `CONTRIBUTING.md`, and `stale_in` has `CONTRIBUTING.md` with `audience: "human"`, `reason: "reworded"`, and `status: "found"`. `pending` has a `CONTRIBUTING.md` entry for the new human wording, with `path`, `audience`, and `kind` but no text. The addition is proposed from that entry.
 
 ## Scenario 8: rejected drop after an unrecorded wording edit
 
@@ -145,7 +145,17 @@ printf 'Secrets MUST NOT appear in CI logs.\nSecrets MUST NOT leak into CI logs.
 python3 $PLUGIN/skills/sync/scripts/sync_status.py --dir .policy/rule --root .
 ```
 
-**Pass condition**: `changed: true`, and `pending` is empty because the new wording is already in place once. `stale_in` still lists `CONTRIBUTING.md` with `status: "found"` for the old sentence. `record_sync 001` refuses it with exit `1` and writes nothing until every change is applied (FR-004, R14).
+**Pass condition**: `changed: true`, and `pending` is empty because the added wording is already in `CONTRIBUTING.md`, so no addition is left to apply. `stale_in` still lists `CONTRIBUTING.md` with `status: "found"` for the old sentence. `record_sync 001` refuses it with exit `1` and writes nothing until every change is applied (FR-004, R14).
+
+To check that the refused record writes nothing, save a copy of the rule file, run the record, and compare the bytes:
+
+```sh
+cp .policy/rule/001.md before.md
+python3 $PLUGIN/skills/sync/scripts/record_sync.py --dir .policy/rule 001; echo "exit $?"
+cmp .policy/rule/001.md before.md && echo unchanged
+```
+
+The exit code is `1`, and `cmp` reports `unchanged`.
 
 ## Scenario 12: hand-edited agent-only file is held
 
